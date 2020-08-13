@@ -1,6 +1,8 @@
 module Main (main) where
 
 import Control.Lens ((^.))
+import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Text (unpack)
 import Data.Tuple.Sequence (sequenceT)
 import qualified Network.Wreq as R
@@ -21,18 +23,25 @@ infixr 8 <$<
 withNewline :: IsString a => Semigroup a => a -> a -> a
 withNewline a b = a <> "\n" <> b
 
-data Config = Config
+data Source = Source
   { url :: !Text
   }
 
+sourceCodec :: TomlCodec Source
+sourceCodec = Source <$> Toml.text "url" .= url
+
+data Config = Config
+  { sources :: Map Text Source
+  }
+
 cfgCodec :: TomlCodec Config
-cfgCodec = Config <$> Toml.text "url" .= url
+cfgCodec = Config <$> Toml.tableMap Toml._KeyText (Toml.table sourceCodec) "sources" .= sources
 
 cfgPath :: IO FilePath
 cfgPath = getUserConfigFile "terpod" "config.toml"
 
-cfg :: IO (Either [TomlDecodeError] Config)
-cfg = Toml.decodeFileEither cfgCodec =<< cfgPath
+getCfg :: IO (Either [TomlDecodeError] Config)
+getCfg = Toml.decodeFileEither cfgCodec =<< cfgPath
 
 getPod :: String -> IO (Maybe Feed)
 getPod = parseFeedSource . (^. R.responseBody) <$< R.get
@@ -42,15 +51,21 @@ getItemId' = snd <$< getItemId
 
 list :: [Item] -> Text
 list [] = "No items to display."
-list xs = foldr withNewline mempty $ mapMaybe item xs
+list xs = foldr withNewline mempty $ mapMaybe item $ take 10 xs
   where
     item = fmt <$< sequenceT . (getItemId' &&& getItemTitle)
-    fmt (id, title) = id <> ": " <> title
+    fmt (id, title) = "\t" <> id <> ": " <> title
 
 main :: IO ()
 main =
-  cfg <&> (unpack . fromRight "FAIL" . fmap url) >>= getPod >>= \case
-    Nothing -> putStrLn "Failed to parse feed"
-    Just feed -> do
-      putStrLn $ unpack $ getFeedTitle feed
-      putStrLn $ unpack $ list $ feedItems feed
+  getCfg >>= \case
+    Left e -> mapM_ (putStrLn . show) e
+    Right cfg -> mapM_ render $ M.toList $ sources cfg
+  where
+    render :: (Text, Source) -> IO ()
+    render (id, src) =
+      (getPod . unpack . url) src >>= \case
+        Nothing -> putStrLn $ "Failed to get feed (id: " <> unpack id <> ")."
+        Just feed -> do
+          putStrLn $ unpack $ getFeedTitle feed <> " (" <> id <> "):"
+          putStrLn $ unpack $ list $ feedItems feed
