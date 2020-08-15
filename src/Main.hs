@@ -18,7 +18,7 @@ import qualified Toml
 withNewline :: IsString a => Semigroup a => a -> a -> a
 withNewline a b = a <> "\n" <> b
 
-surround :: Text -> Text -> Text
+surround :: IsString a => Semigroup a => a -> a -> a
 surround outside inside = outside <> inside <> outside
 
 data Episode = Episode
