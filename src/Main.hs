@@ -1,6 +1,7 @@
 module Main (main) where
 
 import Control.Lens ((^.))
+import Data.Functor.Custom ((<$<))
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (unpack)
@@ -13,13 +14,6 @@ import Text.Feed.Query (ItemGetter, feedItems, getFeedTitle, getItemId, getItemL
 import Text.Feed.Types (Feed, Item)
 import Toml (TomlCodec, TomlDecodeError, (.=))
 import qualified Toml
-
--- | Compose two functions where the first returns a functor and the second is
--- | to be applied within said functor.
-(<$<) :: Functor f => (b -> c) -> (a -> f b) -> a -> f c
-(<$<) = fmap . fmap
-
-infixr 8 <$<
 
 withNewline :: IsString a => Semigroup a => a -> a -> a
 withNewline a b = a <> "\n" <> b

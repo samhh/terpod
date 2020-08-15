@@ -8,6 +8,7 @@ build-type:          Simple
 extra-source-files:  CHANGELOG.md
 
 executable terpod
+  hs-source-dirs:      src/
   main-is:             Main.hs
   build-depends:         base == 4.*
                        , relude == 0.7.*
@@ -25,4 +26,5 @@ executable terpod
   default-extensions:    LambdaCase
                        , OverloadedStrings
   default-language:    Haskell2010
+  other-modules:       Data.Functor.Custom
 
