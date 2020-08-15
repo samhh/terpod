@@ -2,7 +2,7 @@ module Main (main) where
 
 import Control.Lens ((^.))
 import Data.Functor.Custom ((<$<))
-import Data.Map (Map)
+import Data.Map()
 import qualified Data.Map as M
 import Data.Text (unpack)
 import Data.Time.Clock.POSIX (getPOSIXTime)
@@ -56,8 +56,7 @@ setCache :: [CachedFeed] -> IO ()
 setCache xs = do
   path <- cachePath
   ts <- now
-  Toml.encodeToFile cacheCodec path $ Cache ts (M.fromList <$> M.fromList (escape xs))
-  pure ()
+  void <$> Toml.encodeToFile cacheCodec path $ Cache ts (M.fromList <$> M.fromList (escape xs))
   where
     -- The string is cut off at an invalid character such as a colon, hence the
     -- need to surround in quotes
@@ -94,13 +93,13 @@ list [] = "No items to display."
 list xs = foldr withNewline mempty $ mapMaybe item $ take 10 xs
   where
     item = fmt <$< sequenceT . (getItemId' &&& getItemTitle)
-    fmt (id, title) = "\t" <> id <> ": " <> title
+    fmt (epid, eptitle) = "\t" <> epid <> ": " <> eptitle
 
 toCached :: FeedId -> Feed -> CachedFeed
 toCached fid feed = (fid, morph `mapMaybe` feedItems feed)
   where
     morph x = build <$> getItemId' x <*> getItemTitle x <*> getItemLink x
-    build epid title link = (epid, Episode title link)
+    build epid eptitle eplink = (epid, Episode eptitle eplink)
 
 main :: IO ()
 main =
