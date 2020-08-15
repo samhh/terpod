@@ -2,10 +2,10 @@ module Main (main) where
 
 import Control.Lens ((^.))
 import Data.Functor.Custom ((<$<))
-import Data.Map()
+import Data.Map ()
 import qualified Data.Map as M
 import Data.Text (unpack)
-import Data.Time.Clock.POSIX (getPOSIXTime)
+import Data.Timestamp (Timestamp, now, timestampCodec)
 import Data.Tuple.Sequence (sequenceT)
 import qualified Network.Wreq as R
 import System.Environment.XDG.BaseDir (getUserCacheFile, getUserConfigFile)
@@ -20,9 +20,6 @@ withNewline a b = a <> "\n" <> b
 
 surround :: Text -> Text -> Text
 surround outside inside = outside <> inside <> outside
-
-now :: IO Int
-now = round <$> getPOSIXTime
 
 data Episode = Episode
   { title :: Text,
@@ -39,14 +36,14 @@ type EpisodeId = Text
 type CachedFeed = (FeedId, [(EpisodeId, Episode)])
 
 data Cache = Cache
-  { timestamp :: Int,
+  { timestamp :: Timestamp,
     feeds :: Map FeedId (Map EpisodeId Episode)
   }
 
 cacheCodec :: TomlCodec Cache
 cacheCodec =
   Cache
-    <$> Toml.int "timestamp" .= timestamp
+    <$> timestampCodec "timestamp" .= timestamp
     <*> Toml.tableMap Toml._KeyText (Toml.tableMap Toml._KeyText (Toml.table episodeCodec)) "feeds" .= feeds
 
 cachePath :: IO FilePath

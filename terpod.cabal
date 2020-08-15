@@ -33,4 +33,6 @@ executable terpod
 
   ghc-options:        -Wall
   default-language:   Haskell2010
-  other-modules:      Data.Functor.Custom
+  other-modules:
+    Data.Functor.Custom
+    Data.Timestamp
