@@ -36,3 +36,4 @@ executable terpod
   other-modules:
     Data.Functor.Custom
     Data.Timestamp
+    Data.String.Custom

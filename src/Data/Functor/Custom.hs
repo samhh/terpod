@@ -6,4 +6,3 @@ module Data.Functor.Custom ((<$<)) where
 (<$<) = fmap . fmap
 
 infixr 8 <$<
-

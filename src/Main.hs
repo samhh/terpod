@@ -4,6 +4,7 @@ import Control.Lens ((^.))
 import Data.Functor.Custom ((<$<))
 import Data.Map ()
 import qualified Data.Map as M
+import Data.String.Custom (surround, withNewline)
 import Data.Text (unpack)
 import Data.Timestamp (Timestamp, now, timestampCodec)
 import Data.Tuple.Sequence (sequenceT)
@@ -14,12 +15,6 @@ import Text.Feed.Query (ItemGetter, feedItems, getFeedTitle, getItemId, getItemL
 import Text.Feed.Types (Feed, Item)
 import Toml (TomlCodec, TomlDecodeError, (.=))
 import qualified Toml
-
-withNewline :: IsString a => Semigroup a => a -> a -> a
-withNewline a b = a <> "\n" <> b
-
-surround :: IsString a => Semigroup a => a -> a -> a
-surround outside inside = outside <> inside <> outside
 
 data Episode = Episode
   { title :: Text,
