@@ -1,30 +1,35 @@
-cabal-version:       >= 2.0
-version:             0.0.0
-license:             AGPL
-author:              Sam A. Horvath-Hunt
-maintainer:          terpod@samhh.com
-name:                terpod
-build-type:          Simple
-extra-source-files:  CHANGELOG.md
+cabal-version:      >=2.0
+version:            0.0.0
+license:            AGPL
+author:             Sam A. Horvath-Hunt
+maintainer:         terpod@samhh.com
+name:               terpod
+build-type:         Simple
+extra-source-files: CHANGELOG.md
 
 executable terpod
-  hs-source-dirs:      src/
-  main-is:             Main.hs
-  build-depends:         base == 4.*
-                       , relude == 0.7.*
-                       , containers ^>= 0.6
-                       , feed ^>= 1.3
-                       , lens ^>= 4.19
-                       , text ^>= 1.2
-                       , time ^>= 1.9
-                       , tomland ^>= 1.3
-                       , tuple ^>= 0.3
-                       , wreq ^>= 0.5
-                       , xdg-basedir ^>= 0.2
-  mixins:                base hiding (Prelude)
-                       , relude (Relude as Prelude)
-  default-extensions:    LambdaCase
-                       , OverloadedStrings
-  default-language:    Haskell2010
-  other-modules:       Data.Functor.Custom
+  hs-source-dirs:     src/
+  main-is:            Main.hs
+  build-depends:
+      base         >=4    && <5
+    , containers   ^>=0.6
+    , feed         ^>=1.3
+    , lens         ^>=4.19
+    , relude       ^>=0.7
+    , text         ^>=1.2
+    , time         ^>=1.9
+    , tomland      ^>=1.3
+    , tuple        ^>=0.3
+    , wreq         ^>=0.5
+    , xdg-basedir  ^>=0.2
 
+  mixins:
+    base hiding (Prelude),
+    relude (Relude as Prelude)
+
+  default-extensions:
+    LambdaCase
+    OverloadedStrings
+
+  default-language:   Haskell2010
+  other-modules:      Data.Functor.Custom
