@@ -1,6 +1,6 @@
 module CLI (parseOptions, Options (..), Command (..)) where
 
-import Episode (EpisodeId)
+import Episode (EpisodeId (EpisodeId))
 import qualified Options.Applicative as A
 
 newtype Options = Options
@@ -21,7 +21,7 @@ listParser :: A.Parser Command
 listParser = pure List
 
 downloadParser :: A.Parser Command
-downloadParser = Download <$> A.argument A.str (A.metavar "EPISODE-ID")
+downloadParser = Download . EpisodeId <$> A.argument A.str (A.metavar "EPISODE-ID")
 
 commandParser :: A.Parser Command
 commandParser =

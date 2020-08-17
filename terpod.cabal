@@ -45,3 +45,4 @@ executable terpod
     Episode
     Podcast
     Text.Feed.Query.Custom
+    Toml.Codec.BiMap.Conversion.Custom

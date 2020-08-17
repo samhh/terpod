@@ -6,14 +6,14 @@ import Config (Source (sourceUrl), getCfg, sources)
 import Data.Map ()
 import qualified Data.Map as M
 import Data.Text (unpack)
-import Episode (Episode (title), EpisodeId)
+import Episode (Episode (title), EpisodeId, unEpisodeId)
 import Podcast (PodcastId, getPodcast)
 import Text.Feed.Types (Feed)
 
 main :: IO ()
 main =
   parseOptions <&> command >>= \case
-    Download epid -> putStrLn $ "TODO: Download " <> unpack epid
+    Download epid -> putStrLn $ "TODO: Download " <> unpack (unEpisodeId epid)
     List -> mapM_ renderFeed =<< getCache
     Sync ->
       getCfg >>= \case
@@ -29,7 +29,7 @@ main =
       mapM_ (putStrLn . unpack . renderEpisode) $ take 10 eps
 
     renderEpisode :: (EpisodeId, Episode) -> Text
-    renderEpisode (epid, ep) = "\t" <> epid <> ": " <> title ep
+    renderEpisode (epid, ep) = "\t" <> (unEpisodeId epid) <> ": " <> title ep
 
     getFeeds :: (PodcastId, Source) -> IO (Maybe (PodcastId, Feed))
     getFeeds (fid, src) =
