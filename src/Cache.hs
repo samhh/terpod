@@ -1,5 +1,6 @@
-module Cache (toCached, setCache) where
+module Cache (CachedFeed, toCached, getCache, setCache) where
 
+import Data.Functor.Custom ((<$<))
 import qualified Data.Map as M
 import Data.String.Custom (surround)
 import Data.Timestamp (Timestamp, now, timestampCodec)
@@ -35,6 +36,9 @@ toCached fid feed = (fid, morph `mapMaybe` feedItems feed)
   where
     morph x = build <$> getItemId' x <*> getItemTitle x <*> getItemLink x
     build epid eptitle eplink = (epid, Episode eptitle eplink)
+
+getCache :: IO [CachedFeed]
+getCache = fmap (second M.toList <$< M.toList . feeds) <$> Toml.decodeFile cacheCodec =<< cachePath
 
 setCache :: [CachedFeed] -> IO ()
 setCache xs = do

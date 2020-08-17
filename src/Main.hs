@@ -1,46 +1,46 @@
 module Main (main) where
 
-import Cache (setCache, toCached)
+import CLI (Command (..), Options (..), parseOptions)
+import Cache (CachedFeed, getCache, setCache, toCached)
 import Config (Source (sourceUrl), getCfg, sources)
 import Control.Lens ((^.))
 import Data.Functor.Custom ((<$<))
 import Data.Map ()
 import qualified Data.Map as M
-import Data.String.Custom (withNewline)
 import Data.Text (unpack)
-import Data.Tuple.Sequence (sequenceT)
 import qualified Network.Wreq as R
-import Podcast (FeedId)
+import Podcast (Episode (title), EpisodeId, FeedId)
 import Text.Feed.Import (parseFeedSource)
-import Text.Feed.Query (feedItems, getFeedTitle, getItemTitle)
-import Text.Feed.Query.Custom (getItemId')
-import Text.Feed.Types (Feed, Item)
+import Text.Feed.Types (Feed)
 
 getPod :: String -> IO (Maybe Feed)
 getPod = parseFeedSource . (^. R.responseBody) <$< R.get
 
-list :: [Item] -> Text
-list [] = "No items to display."
-list xs = foldr withNewline mempty $ mapMaybe item $ take 10 xs
-  where
-    item = fmt <$< sequenceT . (getItemId' &&& getItemTitle)
-    fmt (epid, eptitle) = "\t" <> epid <> ": " <> eptitle
-
 main :: IO ()
 main =
-  getCfg >>= \case
-    Left e -> mapM_ print e
-    Right cfg -> do
-      x <- fmap catMaybes <$> mapM render $ M.toList $ sources cfg
-      setCache $ uncurry toCached <$> x
+  parseOptions <&> command >>= \case
+    Download epid -> putStrLn $ "TODO: Download " <> unpack epid
+    List -> do
+      feeds <- getCache
+      mapM_ render feeds
+    Sync ->
+      getCfg >>= \case
+        Left e -> mapM_ print e
+        Right cfg -> do
+          feeds <- catMaybes <$> mapM getFeeds (M.toList $ sources cfg)
+          setCache $ uncurry toCached <$> feeds
+          putStrLn "Successfully synced."
   where
-    render :: (FeedId, Source) -> IO (Maybe (FeedId, Feed))
-    render (fid, src) =
+    render :: CachedFeed -> IO ()
+    render (fid, eps) = do
+      putStrLn $ unpack fid
+      mapM_ (putStrLn . unpack . renderEpisode) $ take 10 eps
+
+    renderEpisode :: (EpisodeId, Episode) -> Text
+    renderEpisode (epid, ep) = "\t" <> epid <> ": " <> title ep
+
+    getFeeds :: (FeedId, Source) -> IO (Maybe (FeedId, Feed))
+    getFeeds (fid, src) =
       (getPod . unpack . sourceUrl) src >>= \case
-        Nothing -> do
-          putStrLn $ "Failed to get feed (id: " <> unpack fid <> ")."
-          pure Nothing
-        Just feed -> do
-          putStrLn $ unpack $ getFeedTitle feed <> " (" <> fid <> "):"
-          putStrLn $ unpack $ list $ feedItems feed
-          pure $ Just (fid, feed)
+        Nothing -> Nothing <$ putStrLn ("Failed to get feed (id: " <> unpack fid <> ").")
+        Just feed -> pure $ Just (fid, feed)
