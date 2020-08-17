@@ -3,6 +3,8 @@ module Cache (CachedFeed, toCached, getCache, setCache) where
 import Data.Functor.Custom ((<$<))
 import qualified Data.Map as M
 import Data.String.Custom (surround)
+import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import Data.Timestamp (Timestamp, now, timestampCodec)
 import Podcast (Episode (..), EpisodeId, FeedId)
 import System.Environment.XDG.BaseDir (getUserCacheFile)
@@ -44,8 +46,12 @@ setCache :: [CachedFeed] -> IO ()
 setCache xs = do
   path <- cachePath
   ts <- now
-  void <$> Toml.encodeToFile cacheCodec path $ Cache ts (M.fromList <$> M.fromList (escape xs))
+  let encoded = Toml.encode cacheCodec $ Cache ts (M.fromList <$> M.fromList (escape xs))
+  TIO.writeFile path $ unicodePatch encoded
   where
     -- The string is cut off at an invalid character such as a colon, hence the
     -- need to surround in quotes
     escape = fmap $ second $ fmap $ first $ surround "\""
+    -- Unicode characters seemingly incorrectly encoded by lib, see:
+    -- https://github.com/kowainik/tomland/issues/334
+    unicodePatch = T.replace "\\" "\\u0"
