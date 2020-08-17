@@ -6,7 +6,8 @@ import Config (Source (sourceUrl), getCfg, sources)
 import Data.Map ()
 import qualified Data.Map as M
 import Data.Text (unpack)
-import Podcast (Episode (title), EpisodeId, FeedId, getPod)
+import Episode (Episode (title), EpisodeId)
+import Podcast (PodcastId, getPodcast)
 import Text.Feed.Types (Feed)
 
 main :: IO ()
@@ -30,8 +31,8 @@ main =
     renderEpisode :: (EpisodeId, Episode) -> Text
     renderEpisode (epid, ep) = "\t" <> epid <> ": " <> title ep
 
-    getFeeds :: (FeedId, Source) -> IO (Maybe (FeedId, Feed))
+    getFeeds :: (PodcastId, Source) -> IO (Maybe (PodcastId, Feed))
     getFeeds (fid, src) =
-      (getPod . unpack . sourceUrl) src >>= \case
+      (getPodcast . unpack . sourceUrl) src >>= \case
         Nothing -> Nothing <$ putStrLn ("Failed to get feed (id: " <> unpack fid <> ").")
         Just feed -> pure $ Just (fid, feed)

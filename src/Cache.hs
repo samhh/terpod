@@ -6,7 +6,8 @@ import Data.String.Custom (surround)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Data.Timestamp (Timestamp, now, timestampCodec)
-import Podcast (Episode (..), EpisodeId, FeedId)
+import Episode (Episode (..), EpisodeId)
+import Podcast (PodcastId)
 import System.Environment.XDG.BaseDir (getUserCacheFile)
 import Text.Feed.Query (feedItems, getItemTitle)
 import Text.Feed.Query.Custom (getItemEnclosureLink, getItemId')
@@ -14,14 +15,14 @@ import Text.Feed.Types (Feed)
 import Toml (TomlCodec, (.=))
 import qualified Toml
 
-type CachedFeed = (FeedId, [(EpisodeId, Episode)])
+type CachedFeed = (PodcastId, [(EpisodeId, Episode)])
 
 episodeCodec :: TomlCodec Episode
 episodeCodec = Episode <$> Toml.text "title" .= title <*> Toml.text "url" .= episodeUrl
 
 data Cache = Cache
   { timestamp :: Timestamp,
-    feeds :: Map FeedId (Map EpisodeId Episode)
+    feeds :: Map PodcastId (Map EpisodeId Episode)
   }
 
 cacheCodec :: TomlCodec Cache
@@ -33,7 +34,7 @@ cacheCodec =
 cachePath :: IO FilePath
 cachePath = getUserCacheFile "terpod" "synced.toml"
 
-toCached :: FeedId -> Feed -> CachedFeed
+toCached :: PodcastId -> Feed -> CachedFeed
 toCached fid feed = (fid, morph `mapMaybe` feedItems feed)
   where
     morph x = build <$> getItemId' x <*> getItemTitle x <*> getItemEnclosureLink x
