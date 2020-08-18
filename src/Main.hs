@@ -1,7 +1,7 @@
 module Main (main) where
 
 import CLI (Command (..), Options (..), parseOptions)
-import Cache (CachedFeed, getCache, setCache, toCached)
+import Cache (CachedPodcast, getCache, setCache, toCached)
 import Config (Source (sourceUrl), getCfg, sources)
 import Data.Map ()
 import qualified Data.Map as M
@@ -23,7 +23,7 @@ main =
           setCache $ uncurry toCached <$> feeds
           putStrLn "Successfully synced."
   where
-    renderFeed :: CachedFeed -> IO ()
+    renderFeed :: CachedPodcast -> IO ()
     renderFeed (fid, eps) = do
       putStrLn $ unpack fid
       mapM_ (putStrLn . unpack . renderEpisode) $ take 10 eps

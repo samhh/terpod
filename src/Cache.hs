@@ -1,4 +1,4 @@
-module Cache (CachedFeed, toCached, getCache, setCache) where
+module Cache (CachedPodcast, toCached, getCache, setCache) where
 
 import Data.Functor.Custom ((<$<))
 import qualified Data.Map as M
@@ -15,7 +15,7 @@ import Text.Feed.Types (Feed)
 import Toml (TomlCodec, (.=))
 import qualified Toml
 
-type CachedFeed = (PodcastId, [(EpisodeId, Episode)])
+type CachedPodcast = (PodcastId, [(EpisodeId, Episode)])
 
 episodeCodec :: TomlCodec Episode
 episodeCodec = Episode <$> Toml.text "title" .= title <*> Toml.text "url" .= episodeUrl
@@ -34,16 +34,16 @@ cacheCodec =
 cachePath :: IO FilePath
 cachePath = getUserCacheFile "terpod" "synced.toml"
 
-toCached :: PodcastId -> Feed -> CachedFeed
+toCached :: PodcastId -> Feed -> CachedPodcast
 toCached fid feed = (fid, morph `mapMaybe` feedItems feed)
   where
     morph x = build <$> getItemId' x <*> getItemTitle x <*> getItemEnclosureLink x
     build epid eptitle eplink = (EpisodeId epid, Episode eptitle eplink)
 
-getCache :: IO [CachedFeed]
+getCache :: IO [CachedPodcast]
 getCache = fmap (second M.toList <$< M.toList . feeds) <$> Toml.decodeFile cacheCodec =<< cachePath
 
-setCache :: [CachedFeed] -> IO ()
+setCache :: [CachedPodcast] -> IO ()
 setCache xs = do
   path <- cachePath
   ts <- now
