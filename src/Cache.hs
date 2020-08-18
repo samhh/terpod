@@ -2,11 +2,11 @@ module Cache (CachedPodcast, toCached, getCache, setCache) where
 
 import Data.Functor.Custom ((<$<))
 import qualified Data.Map as M
-import Data.String.Custom (surround)
+import Data.String.Custom (surround, unsurround)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Data.Timestamp (Timestamp, now, timestampCodec)
-import Episode (Episode (..), EpisodeId (EpisodeId), _KeyEpisodeId)
+import Episode (Episode (..), EpisodeId (EpisodeId), _KeyEpisodeId, unEpisodeId)
 import Podcast (PodcastId, _KeyPodcastId)
 import System.Environment.XDG.BaseDir (getUserCacheFile)
 import Text.Feed.Query (feedItems, getItemTitle)
@@ -41,7 +41,11 @@ toCached fid feed = (fid, morph `mapMaybe` feedItems feed)
     build epid eptitle eplink = (EpisodeId epid, Episode eptitle eplink)
 
 getCache :: IO [CachedPodcast]
-getCache = fmap (second M.toList <$< M.toList . feeds) <$> Toml.decodeFile cacheCodec =<< cachePath
+getCache = fmap (unescape <$> second M.toList <$< M.toList . feeds) . Toml.decodeFile cacheCodec =<< cachePath
+  where
+    -- Reverse escaping from setting cache
+    unescape :: [CachedPodcast] -> [CachedPodcast]
+    unescape = fmap $ second $ fmap $ first (EpisodeId . unsurround "\"" . unEpisodeId)
 
 setCache :: [CachedPodcast] -> IO ()
 setCache xs = do

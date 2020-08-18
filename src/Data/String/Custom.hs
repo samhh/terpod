@@ -1,4 +1,9 @@
-module Data.String.Custom (surround) where
+module Data.String.Custom (surround, unsurround) where
 
-surround :: IsString a => Semigroup a => a -> a -> a
+import RIO.Text (dropPrefix, dropSuffix)
+
+surround :: Semigroup a => a -> a -> a
 surround outside inside = outside <> inside <> outside
+
+unsurround :: Text -> Text -> Text
+unsurround around = dropPrefix around . dropSuffix around
