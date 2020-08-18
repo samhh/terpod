@@ -7,7 +7,7 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Data.Timestamp (Timestamp, now, timestampCodec)
 import Episode (Episode (..), EpisodeId (EpisodeId), _KeyEpisodeId)
-import Podcast (PodcastId)
+import Podcast (PodcastId, _KeyPodcastId)
 import System.Environment.XDG.BaseDir (getUserCacheFile)
 import Text.Feed.Query (feedItems, getItemTitle)
 import Text.Feed.Query.Custom (getItemEnclosureLink, getItemId')
@@ -29,7 +29,7 @@ cacheCodec :: TomlCodec Cache
 cacheCodec =
   Cache
     <$> timestampCodec "timestamp" .= timestamp
-    <*> Toml.tableMap Toml._KeyText (Toml.tableMap _KeyEpisodeId (Toml.table episodeCodec)) "feeds" .= feeds
+    <*> Toml.tableMap _KeyPodcastId (Toml.tableMap _KeyEpisodeId (Toml.table episodeCodec)) "feeds" .= feeds
 
 cachePath :: IO FilePath
 cachePath = getUserCacheFile "terpod" "synced.toml"

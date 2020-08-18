@@ -1,5 +1,6 @@
 module Config (Config (..), Source (..), getCfg) where
 
+import Podcast (PodcastId, _KeyPodcastId)
 import System.Environment.XDG.BaseDir (getUserConfigFile)
 import Toml (TomlCodec, TomlDecodeError, (.=))
 import qualified Toml
@@ -12,11 +13,11 @@ sourceCodec :: TomlCodec Source
 sourceCodec = Source <$> Toml.text "url" .= sourceUrl
 
 newtype Config = Config
-  { sources :: Map Text Source
+  { sources :: Map PodcastId Source
   }
 
 cfgCodec :: TomlCodec Config
-cfgCodec = Config <$> Toml.tableMap Toml._KeyText (Toml.table sourceCodec) "sources" .= sources
+cfgCodec = Config <$> Toml.tableMap _KeyPodcastId (Toml.table sourceCodec) "sources" .= sources
 
 cfgPath :: IO FilePath
 cfgPath = getUserConfigFile "terpod" "config.toml"
