@@ -2,24 +2,28 @@ module Main (main) where
 
 import CLI (Command (..), Options (..), parseOptions)
 import Cache (CachedPodcast, getCache, setCache, toCached)
-import Config (Source (sourceUrl), getCfg, sources)
+import Config (Source (sourceUrl), downloadPath, getCfg, sources)
 import Data.List.Extra (firstJust)
 import Data.Map ()
 import qualified Data.Map as M
 import Data.Text (unpack)
-import Episode (Episode (title), EpisodeId, unEpisodeId, downloadEpisode)
+import Episode (Episode (title), EpisodeId, downloadEpisode, unEpisodeId)
 import Podcast (PodcastId, getPodcast, unPodcastId)
 import Text.Feed.Types (Feed)
 
 main :: IO ()
 main =
   parseOptions <&> command >>= \case
-    Download epid -> getCache <&> firstJust (findEpisode epid) >>= \case
-      Nothing -> putStrLn $ "Failed to find synced episode ID: " <> unpack (unEpisodeId epid)
-      Just (_, ep) -> do
-        putStrLn $ "Downloading episode: " <> unpack (title ep)
-        path <- downloadEpisode ep
-        putStrLn $ "Finished download, file at: " <> path
+    Download epid ->
+      getCfg >>= \case
+        Left e -> mapM_ print e
+        Right cfg ->
+          getCache <&> firstJust (findEpisode epid) >>= \case
+            Nothing -> putStrLn $ "Failed to find synced episode ID: " <> unpack (unEpisodeId epid)
+            Just (pid, ep) -> do
+              putStrLn $ "Downloading episode: " <> unpack (title ep)
+              path <- downloadEpisode (downloadPath cfg) pid epid ep
+              putStrLn $ "Finished download, file at: " <> path
     List -> mapM_ renderFeed =<< getCache
     Sync ->
       getCfg >>= \case
@@ -29,8 +33,8 @@ main =
           setCache $ uncurry toCached <$> feeds
           putStrLn "Successfully synced."
   where
-    findEpisode :: EpisodeId -> CachedPodcast -> Maybe (EpisodeId, Episode)
-    findEpisode x = find ((== x) . fst) . snd
+    findEpisode :: EpisodeId -> CachedPodcast -> Maybe (PodcastId, Episode)
+    findEpisode epid (podid, eps) = fmap (first (const podid)) . find ((== epid) . fst) $ eps
 
     renderFeed :: CachedPodcast -> IO ()
     renderFeed (fid, eps) = do

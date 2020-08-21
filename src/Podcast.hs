@@ -19,7 +19,7 @@ instance IsString PodcastId where
   fromString = PodcastId . pack
 
 instance Semigroup PodcastId where
-  x <> y = PodcastId $ (unPodcastId x) <> (unPodcastId y)
+  x <> y = PodcastId $ unPodcastId x <> unPodcastId y
 
 _KeyPodcastId :: TomlBiMap Key PodcastId
 _KeyPodcastId = textBiMap PodcastId unPodcastId

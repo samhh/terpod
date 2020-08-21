@@ -4,6 +4,7 @@ import Data.Time.Clock.POSIX (getPOSIXTime)
 import qualified Toml
 
 newtype Timestamp = Timestamp Natural
+  deriving (Show)
 
 now :: IO Timestamp
 now = Timestamp . round <$> getPOSIXTime

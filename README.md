@@ -22,12 +22,14 @@ Available commands:
 Define a list of feeds at `$XDG_CONFIG_HOME/terpod/config.toml`, for example:
 
 ```toml
+download-path = "/home/user/podcasts/"
+
 [sources]
 bbc-global-news = { url = "https://podcasts.files.bbci.co.uk/p02nq0gn.rss" }
 talking-politics = { url = "https://rss.acast.com/talkingpolitics" }
 ```
 
-Then use the application per the above help text. Downloaded episodes will be stored in `$XDG_DATA_HOME/terpod/`.
+You'll first need to sync. Following a sync, any of the synced episode IDs can be downloaded on demand.
 
 ## Contributing
 

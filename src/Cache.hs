@@ -6,7 +6,7 @@ import Data.String.Custom (surround, unsurround)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Data.Timestamp (Timestamp, now, timestampCodec)
-import Episode (Episode (..), EpisodeId (EpisodeId), _KeyEpisodeId, unEpisodeId)
+import Episode (Episode (..), EpisodeId (EpisodeId), unEpisodeId, _KeyEpisodeId)
 import Podcast (PodcastId, _KeyPodcastId)
 import System.Environment.XDG.BaseDir (getUserCacheFile)
 import Text.Feed.Query (feedItems, getItemTitle)
@@ -24,6 +24,7 @@ data Cache = Cache
   { timestamp :: Timestamp,
     feeds :: Map PodcastId (Map EpisodeId Episode)
   }
+  deriving (Show)
 
 cacheCodec :: TomlCodec Cache
 cacheCodec =
@@ -51,12 +52,15 @@ setCache :: [CachedPodcast] -> IO ()
 setCache xs = do
   path <- cachePath
   ts <- now
-  let encoded = Toml.encode cacheCodec $ Cache ts (M.fromList <$> M.fromList (escape xs))
+  let encoded = Toml.encode cacheCodec $ Cache ts $ M.fromList <$> M.fromList (fmap escape xs)
   TIO.writeFile path $ unicodePatch encoded
   where
     -- The string is cut off at an invalid character such as a colon, hence the
     -- need to surround in quotes
-    escape = fmap $ second $ fmap $ first $ surround "\""
+    escape :: CachedPodcast -> CachedPodcast
+    escape = second $ fmap $ first $ surround "\""
+
     -- Unicode characters seemingly incorrectly encoded by lib, see:
     -- https://github.com/kowainik/tomland/issues/334
+    unicodePatch :: Text -> Text
     unicodePatch = T.replace "\\" "\\u0"
