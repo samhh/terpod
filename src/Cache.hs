@@ -5,7 +5,7 @@ import qualified Data.Map as M
 import Data.String.Custom (surround, unsurround)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-import Data.Timestamp (Timestamp, now, timestampCodec)
+import Data.Time (LocalTime, getZonedTime, zonedTimeToLocalTime)
 import Episode (Episode (..), EpisodeId (EpisodeId), episodeIdCodec, unEpisodeId, _KeyEpisodeId)
 import Podcast (PodcastId, _KeyPodcastId)
 import System.Environment.XDG.BaseDir (getUserCacheFile)
@@ -26,7 +26,7 @@ episodeCodec =
     <*> Toml.day "publish-date" .= publishDate
 
 data Cache = Cache
-  { timestamp :: Timestamp,
+  { timestamp :: LocalTime,
     feeds :: Map PodcastId (Map EpisodeId Episode)
   }
   deriving (Show)
@@ -34,7 +34,7 @@ data Cache = Cache
 cacheCodec :: TomlCodec Cache
 cacheCodec =
   Cache
-    <$> timestampCodec "timestamp" .= timestamp
+    <$> Toml.localTime "timestamp" .= timestamp
     <*> Toml.tableMap _KeyPodcastId (Toml.tableMap _KeyEpisodeId (Toml.table episodeCodec)) "feeds" .= feeds
 
 cachePath :: IO FilePath
@@ -58,7 +58,7 @@ getCache = fmap (unescape <$> second M.toList <$< M.toList . feeds) . Toml.decod
 setCache :: [CachedPodcast] -> IO ()
 setCache xs = do
   path <- cachePath
-  ts <- now
+  ts <- zonedTimeToLocalTime <$> getZonedTime
   let encoded = Toml.encode cacheCodec $ Cache ts $ M.fromList <$> M.fromList (fmap escape xs)
   TIO.writeFile path $ unicodePatch encoded
   where

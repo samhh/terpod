@@ -44,7 +44,6 @@ executable terpod
     Data.Functor.Custom
     Data.String.Custom
     Data.Tuple.Custom
-    Data.Timestamp
     Episode
     Podcast
     Text.Feed.Query.Custom
