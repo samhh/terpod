@@ -8,7 +8,9 @@ import qualified Data.Text.IO as TIO
 import Data.Time (LocalTime, getZonedTime, zonedTimeToLocalTime)
 import Episode (Episode (..), EpisodeId (EpisodeId), episodeIdCodec, unEpisodeId, _KeyEpisodeId)
 import Podcast (PodcastId, _KeyPodcastId)
-import System.Environment.XDG.BaseDir (getUserCacheFile)
+import System.Directory (createDirectoryIfMissing)
+import System.FilePath.Posix ((</>))
+import System.Environment.XDG.BaseDir (getUserCacheDir)
 import Text.Feed.Query (feedItems, getItemPublishDate, getItemTitle)
 import Text.Feed.Query.Custom (getItemEnclosureLink, getItemId')
 import Text.Feed.Types (Feed)
@@ -37,8 +39,11 @@ cacheCodec =
     <$> Toml.localTime "timestamp" .= timestamp
     <*> Toml.tableMap _KeyPodcastId (Toml.tableMap _KeyEpisodeId (Toml.table episodeCodec)) "feeds" .= feeds
 
-cachePath :: IO FilePath
-cachePath = getUserCacheFile "terpod" "synced.toml"
+cacheDir :: IO FilePath
+cacheDir = getUserCacheDir "terpod"
+
+withCacheFile :: FilePath -> FilePath
+withCacheFile = (</> "synced.toml")
 
 toCached :: PodcastId -> Feed -> CachedPodcast
 toCached fid feed = (fid, morph `mapMaybe` feedItems feed)
@@ -49,7 +54,7 @@ toCached fid feed = (fid, morph `mapMaybe` feedItems feed)
        in (epId, Episode epId epTitle epLink epDate)
 
 getCache :: IO [CachedPodcast]
-getCache = fmap (unescape <$> second M.toList <$< M.toList . feeds) . Toml.decodeFile cacheCodec =<< cachePath
+getCache = fmap (unescape <$> second M.toList <$< M.toList . feeds) . Toml.decodeFile cacheCodec =<< withCacheFile <$> cacheDir
   where
     -- Reverse escaping from setting cache
     unescape :: [CachedPodcast] -> [CachedPodcast]
@@ -57,10 +62,11 @@ getCache = fmap (unescape <$> second M.toList <$< M.toList . feeds) . Toml.decod
 
 setCache :: [CachedPodcast] -> IO ()
 setCache xs = do
-  path <- cachePath
+  dir <- cacheDir
   ts <- zonedTimeToLocalTime <$> getZonedTime
   let encoded = Toml.encode cacheCodec $ Cache ts $ M.fromList <$> M.fromList (fmap escape xs)
-  TIO.writeFile path $ unicodePatch encoded
+  createDirectoryIfMissing True dir
+  TIO.writeFile (withCacheFile dir) (unicodePatch encoded)
   where
     -- The string is cut off at an invalid character such as a colon, hence the
     -- need to surround in quotes
