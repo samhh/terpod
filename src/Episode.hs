@@ -2,10 +2,10 @@ module Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), unEpisodeId
 
 import Config (DownloadPath, unDownloadPath)
 import Control.Lens ((^.))
-import Data.Functor.Custom ((<$<))
 import Data.Text (pack, unpack)
 import Data.Time.Calendar (Day)
 import qualified Network.Wreq as R
+import System.Directory (createDirectoryIfMissing)
 import Podcast (PodcastId, unPodcastId)
 import System.FilePath.Posix (takeExtension, (</>))
 import Toml (TomlBiMap, TomlCodec)
@@ -48,5 +48,9 @@ instance Ord Episode where
 downloadEpisode :: DownloadPath -> PodcastId -> EpisodeId -> Episode -> IO FilePath
 downloadEpisode base pid epid ep =
   let url = unpack $ episodeUrl ep
-      path = unDownloadPath base </> unpack (unPodcastId pid) </> unpack (unEpisodeId epid) <> takeExtension url
-   in const path <$< writeFileLBS path . (^. R.responseBody) =<< R.get url
+      dir = unDownloadPath base </> unpack (unPodcastId pid)
+      path = dir </> unpack (unEpisodeId epid) <> takeExtension url
+   in do
+        createDirectoryIfMissing True dir
+        writeFileLBS path . (^. R.responseBody) =<< R.get url
+        pure path
