@@ -54,7 +54,7 @@ toCached fid feed = (fid, morph `mapMaybe` feedItems feed)
        in (epId, Episode epId epTitle epLink epDate)
 
 getCache :: IO [CachedPodcast]
-getCache = fmap (unescape <$> second M.toList <$< M.toList . feeds) . Toml.decodeFile cacheCodec =<< withCacheFile <$> cacheDir
+getCache = (unescape <$> second M.toList <$< M.toList . feeds) <$< Toml.decodeFile cacheCodec . withCacheFile =<< cacheDir
   where
     -- Reverse escaping from setting cache
     unescape :: [CachedPodcast] -> [CachedPodcast]
