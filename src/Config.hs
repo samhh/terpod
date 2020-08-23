@@ -1,7 +1,8 @@
-module Config (Config (..), unDownloadPath, DownloadPath (DownloadPath), Source (..), getCfg) where
+module Config (Config (..), unDownloadPath, DownloadPath (DownloadPath), Source (..), getCfg, expandTilde) where
 
 import Podcast (PodcastId, _KeyPodcastId)
 import System.Environment.XDG.BaseDir (getUserConfigFile)
+import System.Directory (getHomeDirectory)
 import Toml (TomlCodec, TomlDecodeError, (.=))
 import qualified Toml
 
@@ -36,3 +37,7 @@ cfgPath = getUserConfigFile "terpod" "config.toml"
 
 getCfg :: IO (Either [TomlDecodeError] Config)
 getCfg = Toml.decodeFileEither cfgCodec =<< cfgPath
+
+expandTilde :: FilePath -> IO FilePath
+expandTilde ('~' : xs) = (<> xs) <$> getHomeDirectory
+expandTilde xs = pure xs

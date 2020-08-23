@@ -1,6 +1,6 @@
 module Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), unEpisodeId, _KeyEpisodeId, downloadEpisode) where
 
-import Config (DownloadPath, unDownloadPath)
+import Config (DownloadPath, expandTilde, unDownloadPath)
 import Control.Lens ((^.))
 import Data.Text (pack, unpack)
 import Data.Time.Calendar (Day)
@@ -46,11 +46,10 @@ instance Ord Episode where
 
 -- | Download a podcast episode onto the filesystem.
 downloadEpisode :: DownloadPath -> PodcastId -> EpisodeId -> Episode -> IO FilePath
-downloadEpisode base pid epid ep =
+downloadEpisode base pid epid ep = do
   let url = unpack $ episodeUrl ep
-      dir = unDownloadPath base </> unpack (unPodcastId pid)
-      path = dir </> unpack (unEpisodeId epid) <> takeExtension url
-   in do
-        createDirectoryIfMissing True dir
-        writeFileLBS path . (^. R.responseBody) =<< R.get url
-        pure path
+  dir <- (</> unpack (unPodcastId pid)) <$> expandTilde (unDownloadPath base)
+  let path = dir </> unpack (unEpisodeId epid) <> takeExtension url
+  createDirectoryIfMissing True dir
+  writeFileLBS path . (^. R.responseBody) =<< R.get url
+  pure path
