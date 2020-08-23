@@ -31,11 +31,3 @@ talking-politics = { url = "https://rss.acast.com/talkingpolitics" }
 
 You'll first need to sync. Following a sync, any of the synced episode IDs can be downloaded on demand.
 
-## Contributing
-
-At the moment, I'm focused on just getting this to work at all. I've started too many side projects, gotten bogged down in (my idea of) perfection, and as a result never gotten anything done. To that end, there's a lot about the state of the codebase right now that I recognise is suboptimal.
-
-That said, I'm new to Haskell development, and have only minimal experience in writing command-line applications. If you spot anything that's bad or otherwise improvable, please do report it to me or put up a pull request. If nothing else it's good to have this stuff documented somewhere other than my head, and if you've any experience with Haskell you'll certainly spot something I've missed.
-
-Cheers!
-
