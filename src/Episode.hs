@@ -1,13 +1,15 @@
-module Episode (EpisodeId (EpisodeId), Episode (..), unEpisodeId, _KeyEpisodeId, downloadEpisode) where
+module Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), unEpisodeId, _KeyEpisodeId, downloadEpisode) where
 
 import Config (DownloadPath, unDownloadPath)
 import Control.Lens ((^.))
 import Data.Functor.Custom ((<$<))
 import Data.Text (pack, unpack)
+import Data.Time.Calendar (Day)
 import qualified Network.Wreq as R
 import Podcast (PodcastId, unPodcastId)
-import System.FilePath.Posix ((</>), takeExtension)
-import Toml (Key, TomlBiMap)
+import System.FilePath.Posix (takeExtension, (</>))
+import Toml (TomlBiMap, TomlCodec)
+import qualified Toml
 import Toml.Codec.BiMap.Conversion.Custom (textBiMap)
 
 newtype EpisodeId = EpisodeId Text
@@ -22,14 +24,25 @@ instance IsString EpisodeId where
 instance Semigroup EpisodeId where
   x <> y = EpisodeId $ unEpisodeId x <> unEpisodeId y
 
-_KeyEpisodeId :: TomlBiMap Key EpisodeId
+episodeIdCodec :: Toml.Key -> TomlCodec EpisodeId
+episodeIdCodec = Toml.diwrap . Toml.text
+
+_KeyEpisodeId :: TomlBiMap Toml.Key EpisodeId
 _KeyEpisodeId = textBiMap EpisodeId unEpisodeId
 
 data Episode = Episode
-  { title :: Text,
-    episodeUrl :: Text
+  { episodeId :: EpisodeId,
+    title :: Text,
+    episodeUrl :: Text,
+    publishDate :: Day
   }
   deriving (Show)
+
+instance Eq Episode where
+  (==) = (==) `on` episodeId
+
+instance Ord Episode where
+  compare = compare `on` publishDate
 
 -- | Download a podcast episode onto the filesystem.
 downloadEpisode :: DownloadPath -> PodcastId -> EpisodeId -> Episode -> IO FilePath

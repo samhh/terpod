@@ -6,10 +6,10 @@ import Data.String.Custom (surround, unsurround)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Data.Timestamp (Timestamp, now, timestampCodec)
-import Episode (Episode (..), EpisodeId (EpisodeId), unEpisodeId, _KeyEpisodeId)
+import Episode (Episode (..), EpisodeId (EpisodeId), episodeIdCodec, unEpisodeId, _KeyEpisodeId)
 import Podcast (PodcastId, _KeyPodcastId)
 import System.Environment.XDG.BaseDir (getUserCacheFile)
-import Text.Feed.Query (feedItems, getItemTitle)
+import Text.Feed.Query (feedItems, getItemPublishDate, getItemTitle)
 import Text.Feed.Query.Custom (getItemEnclosureLink, getItemId')
 import Text.Feed.Types (Feed)
 import Toml (TomlCodec, (.=))
@@ -18,7 +18,12 @@ import qualified Toml
 type CachedPodcast = (PodcastId, [(EpisodeId, Episode)])
 
 episodeCodec :: TomlCodec Episode
-episodeCodec = Episode <$> Toml.text "title" .= title <*> Toml.text "url" .= episodeUrl
+episodeCodec =
+  Episode
+    <$> episodeIdCodec "episode-id" .= episodeId
+    <*> Toml.text "title" .= title
+    <*> Toml.text "url" .= episodeUrl
+    <*> Toml.day "publish-date" .= publishDate
 
 data Cache = Cache
   { timestamp :: Timestamp,
@@ -38,8 +43,10 @@ cachePath = getUserCacheFile "terpod" "synced.toml"
 toCached :: PodcastId -> Feed -> CachedPodcast
 toCached fid feed = (fid, morph `mapMaybe` feedItems feed)
   where
-    morph x = build <$> getItemId' x <*> getItemTitle x <*> getItemEnclosureLink x
-    build epid eptitle eplink = (EpisodeId epid, Episode eptitle eplink)
+    morph x = build <$> getItemId' x <*> getItemTitle x <*> getItemEnclosureLink x <*> join (getItemPublishDate x)
+    build rawEpId epTitle epLink epDate =
+      let epId = EpisodeId rawEpId
+       in (epId, Episode epId epTitle epLink epDate)
 
 getCache :: IO [CachedPodcast]
 getCache = fmap (unescape <$> second M.toList <$< M.toList . feeds) . Toml.decodeFile cacheCodec =<< cachePath

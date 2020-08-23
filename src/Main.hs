@@ -39,7 +39,7 @@ main =
     renderFeed :: CachedPodcast -> IO ()
     renderFeed (fid, eps) = do
       putStrLn $ unpack $ unPodcastId fid
-      mapM_ (putStrLn . unpack . renderEpisode) $ take 10 eps
+      mapM_ (putStrLn . unpack . renderEpisode) $ take 10 $ sortBy (flip compare `on` snd) eps
 
     renderEpisode :: (EpisodeId, Episode) -> Text
     renderEpisode (epid, ep) = "\t" <> unEpisodeId epid <> ": " <> title ep
