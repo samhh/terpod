@@ -2,6 +2,7 @@ module CLI (parseOptions, Options (..), Command (..)) where
 
 import Episode (EpisodeId (EpisodeId))
 import qualified Options.Applicative as A
+import Podcast (PodcastId (PodcastId))
 
 newtype Options = Options
   { command :: Command
@@ -10,7 +11,7 @@ newtype Options = Options
 
 data Command
   = Sync
-  | List
+  | List (Maybe PodcastId)
   | Download EpisodeId
   deriving (Show)
 
@@ -18,7 +19,7 @@ syncParser :: A.Parser Command
 syncParser = pure Sync
 
 listParser :: A.Parser Command
-listParser = pure List
+listParser = List . fmap PodcastId <$> A.optional (A.argument A.str (A.metavar "PODCAST-ID"))
 
 downloadParser :: A.Parser Command
 downloadParser = Download . EpisodeId <$> A.argument A.str (A.metavar "EPISODE-ID")

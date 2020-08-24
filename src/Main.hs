@@ -24,7 +24,13 @@ main =
               putStrLn $ "Downloading episode: " <> unpack (title ep)
               path <- downloadEpisode (downloadPath cfg) pid epid ep
               putStrLn $ "Finished download, file at: " <> path
-    List -> mapM_ renderFeed =<< getCache
+    List pidm ->
+      getCache >>= case pidm of
+        Nothing -> mapM_ renderFeed
+        Just pid ->
+          find ((== pid) . fst) >>> \case
+            Nothing -> putStrLn $ "Failed to find synced podcast ID: " <> unpack (unPodcastId pid)
+            Just pod -> renderFeed pod
     Sync ->
       getCfg >>= \case
         Left e -> mapM_ print e
