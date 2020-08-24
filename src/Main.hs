@@ -1,6 +1,6 @@
 module Main (main) where
 
-import CLI (Command (..), ListOptions (..), Options (..), parseOptions)
+import CLI (Command (..), ListOptions (..), Options (..), Order (..), parseOptions)
 import Cache (CachedPodcast, getCache, setCache, toCached)
 import Config (Source (sourceUrl), downloadPath, getCfg, sources)
 import Data.List.Extra (firstJust)
@@ -25,7 +25,7 @@ main =
               path <- downloadEpisode (downloadPath cfg) pid epid ep
               putStrLn $ "Finished download, file at: " <> path
     List opts ->
-      let renderFeed = renderFeedUntil (10 `fromMaybe` limit opts)
+      let renderFeed = renderFeedUntil (10 `fromMaybe` limit opts) (order opts)
        in getCache
             >>= case podcastId opts of
               Nothing -> mapM_ renderFeed
@@ -44,10 +44,15 @@ main =
     findEpisode :: EpisodeId -> CachedPodcast -> Maybe (PodcastId, Episode)
     findEpisode epid (podid, eps) = fmap (first (const podid)) . find ((== epid) . fst) $ eps
 
-    renderFeedUntil :: Int -> CachedPodcast -> IO ()
-    renderFeedUntil n (fid, eps) = do
+    renderFeedUntil :: Int -> Order -> CachedPodcast -> IO ()
+    renderFeedUntil n o (fid, eps) = do
       putStrLn $ unpack $ unPodcastId fid
-      mapM_ (putStrLn . unpack . renderEpisode) $ take n $ sortBy (flip compare `on` snd) eps
+      mapM_ (putStrLn . unpack . renderEpisode) $ take n $ sortBy (cmp `on` snd) eps
+      where
+        cmp :: Ord a => a -> a -> Ordering
+        cmp = case o of
+          Newest -> flip compare
+          Oldest -> compare
 
     renderEpisode :: (EpisodeId, Episode) -> Text
     renderEpisode (epid, ep) = "\t" <> unEpisodeId epid <> ": " <> title ep

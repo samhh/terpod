@@ -1,4 +1,4 @@
-module CLI (parseOptions, Options (..), Command (..), ListOptions (..)) where
+module CLI (parseOptions, Options (..), Command (..), ListOptions (..), Order (..)) where
 
 import Episode (EpisodeId (EpisodeId))
 import qualified Options.Applicative as A
@@ -9,9 +9,15 @@ newtype Options = Options
   }
   deriving (Show)
 
+data Order
+  = Newest
+  | Oldest
+  deriving (Show)
+
 data ListOptions = ListOptions
   { podcastId :: Maybe PodcastId,
-    limit :: Maybe Int
+    limit :: Maybe Int,
+    order :: Order
   }
   deriving (Show)
 
@@ -26,9 +32,11 @@ syncParser = pure Sync
 
 listParser :: A.Parser Command
 listParser =
-  fmap List . ListOptions
-    <$> (fmap PodcastId <$> A.optional (A.argument A.str (A.metavar "PODCAST-ID")))
-    <*> A.optional (A.option A.auto (A.long "limit" <> A.short 'n' <> A.metavar "LIMIT" <> A.help "Limit the number of items output"))
+  fmap List $
+    ListOptions
+      <$> (fmap PodcastId <$> A.optional (A.argument A.str (A.metavar "PODCAST-ID")))
+      <*> A.optional (A.option A.auto (A.long "limit" <> A.short 'n' <> A.metavar "LIMIT" <> A.help "Limit the number of items output"))
+      <*> A.flag Newest Oldest (A.long "oldest" <> A.help "Sort by oldest")
 
 downloadParser :: A.Parser Command
 downloadParser = Download . EpisodeId <$> A.argument A.str (A.metavar "EPISODE-ID")
