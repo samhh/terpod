@@ -25,14 +25,13 @@ main =
               path <- downloadEpisode (downloadPath cfg) pid epid ep
               putStrLn $ "Finished download, file at: " <> path
     List opts ->
-      let renderFeed = renderFeedUntil (10 `fromMaybe` limit opts) (order opts)
-       in getCache
-            >>= case podcastId opts of
-              Nothing -> mapM_ renderFeed
-              Just pid ->
-                find ((== pid) . fst) >>> \case
-                  Nothing -> putStrLn $ "Failed to find synced podcast ID: " <> unpack (unPodcastId pid)
-                  Just pod -> renderFeed pod
+      getCache
+        >>= case podcastId opts of
+          Nothing -> mapM_ $ renderFeed opts
+          Just pid ->
+            find ((== pid) . fst) >>> \case
+              Nothing -> putStrLn $ "Failed to find synced podcast ID: " <> unpack (unPodcastId pid)
+              Just pod -> renderFeed opts pod
     Sync ->
       getCfg >>= \case
         Left e -> mapM_ print e
@@ -44,13 +43,14 @@ main =
     findEpisode :: EpisodeId -> CachedPodcast -> Maybe (PodcastId, Episode)
     findEpisode epid (podid, eps) = fmap (first (const podid)) . find ((== epid) . fst) $ eps
 
-    renderFeedUntil :: Int -> Order -> CachedPodcast -> IO ()
-    renderFeedUntil n o (fid, eps) = do
+    renderFeed :: ListOptions -> CachedPodcast -> IO ()
+    renderFeed ListOptions {order, limit, offset} (fid, eps) = do
       putStrLn $ unpack $ unPodcastId fid
-      mapM_ (putStrLn . unpack . renderEpisode) $ take n $ sortBy (cmp `on` snd) eps
+      let xs = take (10 `fromMaybe` limit) $ drop (0 `fromMaybe` offset) $ sortBy (cmp `on` snd) eps
+      mapM_ (putStrLn . unpack . renderEpisode) xs
       where
         cmp :: Ord a => a -> a -> Ordering
-        cmp = case o of
+        cmp = case order of
           Newest -> flip compare
           Oldest -> compare
 

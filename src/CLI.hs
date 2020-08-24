@@ -17,6 +17,7 @@ data Order
 data ListOptions = ListOptions
   { podcastId :: Maybe PodcastId,
     limit :: Maybe Int,
+    offset :: Maybe Int,
     order :: Order
   }
   deriving (Show)
@@ -36,6 +37,7 @@ listParser =
     ListOptions
       <$> (fmap PodcastId <$> A.optional (A.argument A.str (A.metavar "PODCAST-ID")))
       <*> A.optional (A.option A.auto (A.long "limit" <> A.short 'n' <> A.metavar "LIMIT" <> A.help "Limit the number of items output"))
+      <*> A.optional (A.option A.auto (A.long "offset" <> A.metavar "OFFSET" <> A.help "Offset items (prior to limiting)"))
       <*> A.flag Newest Oldest (A.long "oldest" <> A.help "Sort by oldest")
 
 downloadParser :: A.Parser Command
