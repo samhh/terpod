@@ -1,4 +1,4 @@
-module CLI (parseOptions, Options (..), Command (..)) where
+module CLI (parseOptions, Options (..), Command (..), ListOptions (..)) where
 
 import Episode (EpisodeId (EpisodeId))
 import qualified Options.Applicative as A
@@ -9,9 +9,15 @@ newtype Options = Options
   }
   deriving (Show)
 
+data ListOptions = ListOptions
+  { podcastId :: Maybe PodcastId,
+    limit :: Maybe Int
+  }
+  deriving (Show)
+
 data Command
   = Sync
-  | List (Maybe PodcastId)
+  | List ListOptions
   | Download EpisodeId
   deriving (Show)
 
@@ -19,7 +25,10 @@ syncParser :: A.Parser Command
 syncParser = pure Sync
 
 listParser :: A.Parser Command
-listParser = List . fmap PodcastId <$> A.optional (A.argument A.str (A.metavar "PODCAST-ID"))
+listParser =
+  fmap List . ListOptions
+    <$> (fmap PodcastId <$> A.optional (A.argument A.str (A.metavar "PODCAST-ID")))
+    <*> A.optional (A.option A.auto (A.long "limit" <> A.short 'n' <> A.metavar "LIMIT" <> A.help "Limit the number of items output"))
 
 downloadParser :: A.Parser Command
 downloadParser = Download . EpisodeId <$> A.argument A.str (A.metavar "EPISODE-ID")

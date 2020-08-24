@@ -1,6 +1,6 @@
 module Main (main) where
 
-import CLI (Command (..), Options (..), parseOptions)
+import CLI (Command (..), ListOptions (..), Options (..), parseOptions)
 import Cache (CachedPodcast, getCache, setCache, toCached)
 import Config (Source (sourceUrl), downloadPath, getCfg, sources)
 import Data.List.Extra (firstJust)
@@ -24,13 +24,15 @@ main =
               putStrLn $ "Downloading episode: " <> unpack (title ep)
               path <- downloadEpisode (downloadPath cfg) pid epid ep
               putStrLn $ "Finished download, file at: " <> path
-    List pidm ->
-      getCache >>= case pidm of
-        Nothing -> mapM_ renderFeed
-        Just pid ->
-          find ((== pid) . fst) >>> \case
-            Nothing -> putStrLn $ "Failed to find synced podcast ID: " <> unpack (unPodcastId pid)
-            Just pod -> renderFeed pod
+    List opts ->
+      let renderFeed = renderFeedUntil (10 `fromMaybe` limit opts)
+       in getCache
+            >>= case podcastId opts of
+              Nothing -> mapM_ renderFeed
+              Just pid ->
+                find ((== pid) . fst) >>> \case
+                  Nothing -> putStrLn $ "Failed to find synced podcast ID: " <> unpack (unPodcastId pid)
+                  Just pod -> renderFeed pod
     Sync ->
       getCfg >>= \case
         Left e -> mapM_ print e
@@ -42,10 +44,10 @@ main =
     findEpisode :: EpisodeId -> CachedPodcast -> Maybe (PodcastId, Episode)
     findEpisode epid (podid, eps) = fmap (first (const podid)) . find ((== epid) . fst) $ eps
 
-    renderFeed :: CachedPodcast -> IO ()
-    renderFeed (fid, eps) = do
+    renderFeedUntil :: Int -> CachedPodcast -> IO ()
+    renderFeedUntil n (fid, eps) = do
       putStrLn $ unpack $ unPodcastId fid
-      mapM_ (putStrLn . unpack . renderEpisode) $ take 10 $ sortBy (flip compare `on` snd) eps
+      mapM_ (putStrLn . unpack . renderEpisode) $ take n $ sortBy (flip compare `on` snd) eps
 
     renderEpisode :: (EpisodeId, Episode) -> Text
     renderEpisode (epid, ep) = "\t" <> unEpisodeId epid <> ": " <> title ep
