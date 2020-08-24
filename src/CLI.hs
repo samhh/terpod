@@ -36,9 +36,9 @@ downloadParser = Download . EpisodeId <$> A.argument A.str (A.metavar "EPISODE-I
 commandParser :: A.Parser Command
 commandParser =
   A.subparser
-    ( A.command "sync" (A.info syncParser $ A.progDesc "Sync podcast feeds.")
-        <> A.command "list" (A.info listParser $ A.progDesc "List the latest episodes of all podcasts.")
-        <> A.command "download" (A.info downloadParser $ A.progDesc "Download an episode by ID.")
+    ( A.command "sync" (A.info syncParser $ A.progDesc "Sync podcast feeds")
+        <> A.command "list" (A.info listParser $ A.progDesc "List the latest episodes of all podcasts")
+        <> A.command "download" (A.info downloadParser $ A.progDesc "Download an episode by ID")
     )
 
 parser :: A.ParserInfo Options
