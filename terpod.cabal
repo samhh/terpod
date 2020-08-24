@@ -35,6 +35,7 @@ executable terpod
   default-extensions:
     LambdaCase
     OverloadedStrings
+    StrictData
 
   ghc-options:        -Wall -fwrite-ide-info -hiedir=.hie
   default-language:   Haskell2010
