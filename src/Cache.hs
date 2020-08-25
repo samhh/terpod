@@ -1,4 +1,4 @@
-module Cache (CachedPodcast, toCached, getCache, setCache) where
+module Cache (CachedPodcast, toCached, getCache, setCache, findEpisode) where
 
 import Data.Functor.Custom ((<$<))
 import qualified Data.Map as M
@@ -77,3 +77,6 @@ setCache xs = do
     -- https://github.com/kowainik/tomland/issues/334
     unicodePatch :: Text -> Text
     unicodePatch = T.replace "\\" "\\u0"
+
+findEpisode :: EpisodeId -> CachedPodcast -> Maybe (PodcastId, Episode)
+findEpisode epid (podid, eps) = fmap (first (const podid)) . find ((== epid) . fst) $ eps
