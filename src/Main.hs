@@ -15,7 +15,7 @@ import Toml (TomlDecodeError)
 getPodcasts :: (PodcastId, Source) -> IO (Maybe (PodcastId, Feed))
 getPodcasts (fid, src) =
   (getPodcast . unpack . sourceUrl) src >>= \case
-    Nothing -> Nothing <$ putStrLn ("Failed to get feed (id: " <> unpack (unPodcastId fid) <> ").")
+    Nothing -> Nothing <$ putTextLn ("Failed to get feed (id: " <> unPodcastId fid <> ").")
     Just feed -> pure $ Just (fid, feed)
 
 renderEpisode :: (EpisodeId, Episode) -> Text
@@ -23,9 +23,9 @@ renderEpisode (epid, ep) = "\t" <> unEpisodeId epid <> ": " <> title ep
 
 renderFeed :: ListOptions -> CachedPodcast -> IO ()
 renderFeed ListOptions {order, limit, offset} (fid, eps) = do
-  putStrLn $ unpack $ unPodcastId fid
+  putTextLn $ unPodcastId fid
   let xs = take (10 `fromMaybe` limit) $ drop (0 `fromMaybe` offset) $ sortBy (cmp `on` snd) eps
-  mapM_ (putStrLn . unpack . renderEpisode) xs
+  mapM_ (putTextLn . renderEpisode) xs
   where
     cmp :: Ord a => a -> a -> Ordering
     cmp = case order of
@@ -38,9 +38,9 @@ renderFailedDecode = mapM_ print
 download :: Config -> EpisodeId -> IO ()
 download cfg epid =
   getCache <&> firstJust (findEpisode epid) >>= \case
-    Nothing -> putStrLn $ "Failed to find synced episode ID: " <> unpack (unEpisodeId epid)
+    Nothing -> putTextLn $ "Failed to find synced episode ID: " <> unEpisodeId epid
     Just (pid, ep) -> do
-      putStrLn $ "Downloading episode: " <> unpack (title ep)
+      putTextLn $ "Downloading episode: " <> title ep
       path <- downloadEpisode (downloadPath cfg) pid epid ep
       putStrLn $ "Finished download, file at: " <> path
 
@@ -49,14 +49,14 @@ list opts = case podcastId opts of
   Nothing -> mapM_ $ renderFeed opts
   Just pid ->
     find ((== pid) . fst) >>> \case
-      Nothing -> putStrLn $ "Failed to find synced podcast ID: " <> unpack (unPodcastId pid)
+      Nothing -> putTextLn $ "Failed to find synced podcast ID: " <> unPodcastId pid
       Just pod -> renderFeed opts pod
 
 sync :: Config -> IO ()
 sync cfg = do
   feeds <- catMaybes <$> mapM getPodcasts (M.toList $ sources cfg)
   setCache $ uncurry toCached <$> feeds
-  putStrLn "Successfully synced."
+  putTextLn "Successfully synced."
 
 main :: IO ()
 main =
