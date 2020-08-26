@@ -20,9 +20,11 @@ renderGetPodcast (fid, src) = do
   putTextLn $ ">>= Syncing " <> unpack fid <> "..."
   res <- getPodcast . T.unpack . sourceUrl $ src
   putTextLn $ case res of
-    Just _ -> ">>> Synced " <> unpack fid <> "."
-    Nothing -> "<#> Failed to sync " <> unpack fid <> "!"
-  pure $ (fid,) <$> res
+    Left _ -> "<#> Failed to fetch " <> unpack fid <> "!"
+    Right x -> case x of
+      Just _ -> ">>> Synced " <> unpack fid <> "."
+      Nothing -> "<#> Failed to decode " <> unpack fid <> "!"
+  pure $ (fid,) <$> either (const Nothing) id res
 
 renderEpisode :: (EpisodeId, Episode) -> Text
 renderEpisode (epid, ep) = "\t" <> unpack epid <> ": " <> title ep
