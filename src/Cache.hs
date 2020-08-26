@@ -77,7 +77,7 @@ setCache xs = do
     -- Unicode characters seemingly incorrectly encoded by lib, see:
     -- https://github.com/kowainik/tomland/issues/334
     unicodePatch :: Text -> Text
-    unicodePatch = T.replace "\\u0\"" "\\\"" . T.replace "\\" "\\u0"
+    unicodePatch = T.replace "\\u0&" "" . T.replace "\\u0\"" "\\\"" . T.replace "\\" "\\u0"
 
 findEpisode :: EpisodeId -> CachedPodcast -> Maybe (PodcastId, Episode)
 findEpisode epid (podid, eps) = fmap (first (const podid)) . find ((== epid) . fst) $ eps
