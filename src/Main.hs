@@ -9,15 +9,21 @@ import Data.Map ()
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Episode (Episode (title), EpisodeId, downloadEpisode)
+import qualified System.Console.ANSI as ANSI
 import Podcast (PodcastId, getPodcast)
 import Text.Feed.Types (Feed)
 import Toml (TomlDecodeError)
 
-getPodcasts :: (PodcastId, Source) -> IO (Maybe (PodcastId, Feed))
-getPodcasts (fid, src) =
-  (getPodcast . T.unpack . sourceUrl) src >>= \case
-    Nothing -> Nothing <$ putTextLn ("Failed to get feed (id: " <> unpack fid <> ").")
-    Just feed -> pure $ Just (fid, feed)
+renderGetPodcast :: (PodcastId, Source) -> IO (Maybe (PodcastId, Feed))
+renderGetPodcast (fid, src) = do
+  putTextLn $ ">>= Syncing " <> unpack fid <> "..."
+  res <- getPodcast . T.unpack . sourceUrl $ src
+  ANSI.cursorUpLine 1
+  ANSI.clearLine
+  putTextLn $ case res of
+    Just _ -> ">>> Synced " <> unpack fid <> "."
+    Nothing -> "<#> Failed to sync " <> unpack fid <> "!"
+  pure $ (fid,) <$> res
 
 renderEpisode :: (EpisodeId, Episode) -> Text
 renderEpisode (epid, ep) = "\t" <> unpack epid <> ": " <> title ep
@@ -55,9 +61,8 @@ list opts = case podcastId opts of
 
 sync :: Config -> IO ()
 sync cfg = do
-  feeds <- catMaybes <$> mapM getPodcasts (M.toList $ sources cfg)
+  feeds <- catMaybes <$> mapM renderGetPodcast (M.toList $ sources cfg)
   setCache $ uncurry toCached <$> feeds
-  putTextLn "Successfully synced."
 
 main :: IO ()
 main =
