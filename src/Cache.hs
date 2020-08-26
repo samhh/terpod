@@ -1,12 +1,13 @@
 module Cache (CachedPodcast, toCached, getCache, setCache, findEpisode) where
 
+import Control.Newtype.Generics (over, over2)
 import Data.Functor.Custom ((<$<))
 import qualified Data.Map as M
 import Data.String.Custom (surround, unsurround)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Data.Time (LocalTime, getZonedTime, zonedTimeToLocalTime)
-import Episode (Episode (..), EpisodeId (EpisodeId), episodeIdCodec, unEpisodeId, _KeyEpisodeId)
+import Episode (Episode (..), EpisodeId (EpisodeId), episodeIdCodec, _KeyEpisodeId)
 import Podcast (PodcastId, _KeyPodcastId)
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath.Posix ((</>))
@@ -58,7 +59,7 @@ getCache = (unescape <$> second M.toList <$< M.toList . feeds) <$< Toml.decodeFi
   where
     -- Reverse escaping from setting cache
     unescape :: [CachedPodcast] -> [CachedPodcast]
-    unescape = fmap $ second $ fmap $ first (EpisodeId . unsurround "\"" . unEpisodeId)
+    unescape = fmap $ second $ fmap $ first (over EpisodeId $ unsurround "\"")
 
 setCache :: [CachedPodcast] -> IO ()
 setCache xs = do
@@ -71,7 +72,7 @@ setCache xs = do
     -- The string is cut off at an invalid character such as a colon, hence the
     -- need to surround in quotes
     escape :: CachedPodcast -> CachedPodcast
-    escape = second $ fmap $ first $ surround "\""
+    escape = second $ fmap $ first $ over2 EpisodeId surround "\""
 
     -- Unicode characters seemingly incorrectly encoded by lib, see:
     -- https://github.com/kowainik/tomland/issues/334
