@@ -4,6 +4,7 @@ import CLI (Command (..), ListOptions (..), Options (..), Order (..), parseOptio
 import Cache (CachedPodcast, findEpisode, getCache, setCache, toCached)
 import Config (Config, Source (sourceUrl), downloadPath, getCfg, sources)
 import Control.Newtype.Generics (unpack)
+import Control.Concurrent.Async (mapConcurrently)
 import Data.List.Extra (firstJust)
 import Data.Map ()
 import qualified Data.Map as M
@@ -18,8 +19,6 @@ renderGetPodcast :: (PodcastId, Source) -> IO (Maybe (PodcastId, Feed))
 renderGetPodcast (fid, src) = do
   putTextLn $ ">>= Syncing " <> unpack fid <> "..."
   res <- getPodcast . T.unpack . sourceUrl $ src
-  ANSI.cursorUpLine 1
-  ANSI.clearLine
   putTextLn $ case res of
     Just _ -> ">>> Synced " <> unpack fid <> "."
     Nothing -> "<#> Failed to sync " <> unpack fid <> "!"
@@ -61,7 +60,7 @@ list opts = case podcastId opts of
 
 sync :: Config -> IO ()
 sync cfg = do
-  feeds <- catMaybes <$> mapM renderGetPodcast (M.toList $ sources cfg)
+  feeds <- catMaybes <$> mapConcurrently renderGetPodcast (M.toList $ sources cfg)
   setCache $ uncurry toCached <$> feeds
 
 main :: IO ()
