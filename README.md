@@ -12,9 +12,9 @@ Available options:
   -h,--help                Show this help text
 
 Available commands:
-  sync                     Sync podcast feeds.
-  list                     List the latest episodes of all podcasts.
-  download                 Download an episode by ID.
+  sync                     Sync podcast feeds
+  list                     List the latest episodes of all podcasts
+  download                 Download an episode by ID
 ```
 
 ## Usage
