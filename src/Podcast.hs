@@ -12,7 +12,7 @@ import Toml (Key, TomlBiMap)
 import Toml.Codec.BiMap.Conversion.Custom (textBiMap)
 
 newtype PodcastId = PodcastId Text
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, IsString)
 
 instance Newtype PodcastId
 

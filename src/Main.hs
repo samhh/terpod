@@ -9,8 +9,7 @@ import Data.List.Extra (firstJust)
 import Data.Map ()
 import qualified Data.Map as M
 import qualified Data.Text as T
-import Episode (Episode (title), EpisodeId, downloadEpisode)
-import qualified System.Console.ANSI as ANSI
+import Episode (Episode (episodeId, title), EpisodeId, downloadEpisode)
 import Podcast (PodcastId, getPodcast)
 import Text.Feed.Types (Feed)
 import Toml (TomlDecodeError)
@@ -26,13 +25,13 @@ renderGetPodcast (fid, src) = do
       Nothing -> "<#> Failed to decode " <> unpack fid <> "!"
   pure $ (fid,) <$> either (const Nothing) id res
 
-renderEpisode :: (EpisodeId, Episode) -> Text
-renderEpisode (epid, ep) = "\t" <> unpack epid <> ": " <> title ep
+renderEpisode :: Episode -> Text
+renderEpisode ep = "\t" <> unpack (episodeId ep) <> ": " <> title ep
 
 renderFeed :: ListOptions -> CachedPodcast -> IO ()
 renderFeed ListOptions {order, limit, offset} (fid, eps) = do
   putTextLn $ unpack fid
-  let xs = take (10 `fromMaybe` limit) $ drop (0 `fromMaybe` offset) $ sortBy (cmp `on` snd) eps
+  let xs = take (10 `fromMaybe` limit) $ drop (0 `fromMaybe` offset) $ sortBy cmp eps
   mapM_ (putTextLn . renderEpisode) xs
   where
     cmp :: Ord a => a -> a -> Ordering
