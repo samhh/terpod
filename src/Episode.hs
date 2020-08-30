@@ -3,6 +3,7 @@ module Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), downloadEpi
 import Config (DownloadPath, expandTilde, unDownloadPath)
 import Control.Lens ((^.))
 import Control.Newtype.Generics (Newtype, unpack)
+import Data.Char (isAlphaNum, toLower)
 import qualified Data.Text as T
 import Data.Time.Calendar (Day)
 import qualified Network.Wreq as R
@@ -20,6 +21,9 @@ instance Newtype EpisodeId
 episodeIdCodec :: Toml.Key -> TomlCodec EpisodeId
 episodeIdCodec = Toml.diwrap . Toml.text
 
+-- Although the episode ID isn't very helpful for anything user-facing, it is
+-- helpful internally in the codebase as a unique ID (within the same podcast,
+-- anyway... hopefully!)
 data Episode = Episode
   { episodeId :: EpisodeId,
     title :: Text,
@@ -34,12 +38,18 @@ instance Eq Episode where
 instance Ord Episode where
   compare = compare `on` publishDate
 
+sanitise :: String -> String
+sanitise = fmap toSafe
+  where
+    toSafe :: Char -> Char
+    toSafe x = if isAlphaNum x then toLower x else '-'
+
 -- | Download a podcast episode onto the filesystem.
 downloadEpisode :: DownloadPath -> PodcastId -> Episode -> IO FilePath
 downloadEpisode base pid ep = do
   let url = T.unpack $ episodeUrl ep
   dir <- (</> T.unpack (unpack pid)) <$> expandTilde (unDownloadPath base)
-  let path = dir </> T.unpack (unpack $ episodeId ep) <> takeExtension url
+  let path = dir </> (sanitise . T.unpack . title $ ep) <> takeExtension url
   createDirectoryIfMissing True dir
   writeFileLBS path . (^. R.responseBody) =<< R.get url
   pure path
