@@ -1,6 +1,5 @@
 module CLI (parseOptions, Options (..), Command (..), ListOptions (..), Order (..)) where
 
-import Episode (EpisodeId (EpisodeId))
 import qualified Options.Applicative as A
 import Podcast (PodcastId (PodcastId))
 
@@ -25,7 +24,7 @@ data ListOptions = ListOptions
 data Command
   = Sync
   | List ListOptions
-  | Download EpisodeId
+  | Download PodcastId Int
   deriving (Show)
 
 syncParser :: A.Parser Command
@@ -41,7 +40,10 @@ listParser =
       <*> A.flag Newest Oldest (A.long "oldest" <> A.help "Sort by oldest")
 
 downloadParser :: A.Parser Command
-downloadParser = Download . EpisodeId <$> A.argument A.str (A.metavar "EPISODE-ID")
+downloadParser =
+  Download
+    <$> A.argument A.str (A.metavar "PODCAST-ID")
+    <*> A.argument A.auto (A.metavar "INDEX")
 
 commandParser :: A.Parser Command
 commandParser =

@@ -23,4 +23,4 @@ _KeyPodcastId = textBiMap pack unpack
 -- a network-level failure and `Nothing` represents a failure to decode the
 -- response body as a feed.
 getPodcast :: String -> IO (Either HttpException (Maybe Feed))
-getPodcast = fmap parseFeedSource . fmap (^. R.responseBody) <$< try . R.get
+getPodcast = fmap (parseFeedSource . (^. R.responseBody)) <$< try . R.get

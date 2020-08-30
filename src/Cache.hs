@@ -66,5 +66,7 @@ setCache xs = do
     unicodePatch :: Text -> Text
     unicodePatch = T.replace "\\u0&" "" . T.replace "\\u0\"" "\\\"" . T.replace "\\" "\\u0"
 
-findEpisode :: EpisodeId -> CachedPodcast -> Maybe (PodcastId, Episode)
-findEpisode epid (podid, eps) = fmap (podid,) . find ((== epid) . episodeId) $ eps
+findEpisode :: PodcastId -> Int -> CachedPodcast -> Maybe Episode
+findEpisode mpid i (pid, eps)
+  | mpid == pid = eps !!? i
+  | otherwise = Nothing

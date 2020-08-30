@@ -9,7 +9,7 @@ import Data.List.Extra (firstJust)
 import Data.Map ()
 import qualified Data.Map as M
 import qualified Data.Text as T
-import Episode (Episode (episodeId, title), EpisodeId, downloadEpisode)
+import Episode (Episode (title), downloadEpisode)
 import Podcast (PodcastId, getPodcast)
 import Text.Feed.Types (Feed)
 import Toml (TomlDecodeError)
@@ -25,30 +25,42 @@ renderGetPodcast (fid, src) = do
       Nothing -> "<#> Failed to decode " <> unpack fid <> "!"
   pure $ (fid,) <$> either (const Nothing) id res
 
-renderEpisode :: Episode -> Text
-renderEpisode ep = "\t" <> unpack (episodeId ep) <> ": " <> title ep
+renderEpisode :: (Int, Episode) -> Text
+renderEpisode (i, ep) = "\t" <> show i <> ": " <> title ep
 
 renderFeed :: ListOptions -> CachedPodcast -> IO ()
 renderFeed ListOptions {order, limit, offset} (fid, eps) = do
   putTextLn $ unpack fid
-  let xs = take (10 `fromMaybe` limit) $ drop (0 `fromMaybe` offset) $ sortBy cmp eps
+  let xs = applyLimit . applyOffset . sortEps . withIndices $ eps
   mapM_ (putTextLn . renderEpisode) xs
   where
+    withIndices :: [a] -> [(Int, a)]
+    withIndices = zip [0..]
+
     cmp :: Ord a => a -> a -> Ordering
     cmp = case order of
       Newest -> flip compare
       Oldest -> compare
 
+    sortEps :: Ord b => [(a, b)] -> [(a, b)]
+    sortEps = sortBy (cmp `on` snd)
+
+    applyOffset :: [a] -> [a]
+    applyOffset = drop (0 `fromMaybe` offset)
+
+    applyLimit :: [a] -> [a]
+    applyLimit = take (10 `fromMaybe` limit)
+
 renderFailedDecode :: Foldable f => f TomlDecodeError -> IO ()
 renderFailedDecode = mapM_ print
 
-download :: Config -> EpisodeId -> IO ()
-download cfg epid =
-  getCache <&> firstJust (findEpisode epid) >>= \case
-    Nothing -> putTextLn $ "Failed to find synced episode ID: " <> unpack epid
-    Just (pid, ep) -> do
+download :: Config -> PodcastId -> Int -> IO ()
+download cfg pid i =
+  getCache <&> firstJust (findEpisode pid i) >>= \case
+    Nothing -> putTextLn $ "Failed to find synced episode at index: " <> show i
+    Just ep -> do
       putTextLn $ "Downloading episode: " <> title ep
-      path <- downloadEpisode (downloadPath cfg) pid epid ep
+      path <- downloadEpisode (downloadPath cfg) pid ep
       putStrLn $ "Finished download, file at: " <> path
 
 list :: Foldable f => ListOptions -> f CachedPodcast -> IO ()
@@ -67,6 +79,6 @@ sync cfg = do
 main :: IO ()
 main =
   parseOptions <&> command >>= \case
-    Download epid -> either renderFailedDecode (`download` epid) =<< getCfg
+    Download pid i -> either renderFailedDecode (\cfg -> download cfg pid i) =<< getCfg
     List opts -> list opts =<< getCache
     Sync -> either renderFailedDecode sync =<< getCfg
