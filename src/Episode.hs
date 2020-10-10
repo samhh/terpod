@@ -1,12 +1,14 @@
 module Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), downloadEpisode) where
 
+import Byte (friendlySize)
+import Conduit (sinkFile, (.|), runConduitRes)
 import Config (DownloadPath, expandTilde, unDownloadPath)
-import Control.Lens ((^.))
 import Control.Newtype.Generics (Newtype, unpack)
 import Data.Char (isAlphaNum, toLower)
 import qualified Data.Text as T
 import Data.Time.Calendar (Day)
-import qualified Network.Wreq as R
+import Network (getContentLength)
+import Network.HTTP.Simple (httpSource, getResponseBody, parseRequest, Response)
 import System.Directory (createDirectoryIfMissing)
 import Podcast (PodcastId)
 import System.FilePath.Posix (takeExtension, (</>))
@@ -48,8 +50,13 @@ sanitise = fmap toSafe
 downloadEpisode :: DownloadPath -> PodcastId -> Episode -> IO FilePath
 downloadEpisode base pid ep = do
   let url = T.unpack $ episodeUrl ep
+  req <- parseRequest url
   dir <- (</> T.unpack (unpack pid)) <$> expandTilde (unDownloadPath base)
   let path = dir </> (sanitise . T.unpack . title $ ep) <> takeExtension url
   createDirectoryIfMissing True dir
-  writeFileLBS path . (^. R.responseBody) =<< R.get url
+  runConduitRes $ httpSource req logSizeAndGetBody .| sinkFile path
   pure path
+    where logSizeAndGetBody :: MonadIO m => Response (m b) -> m b
+          logSizeAndGetBody res = do
+            putStrLn . maybe "Unknown length" (("Size: " <>) . friendlySize) . getContentLength $ res
+            getResponseBody res
