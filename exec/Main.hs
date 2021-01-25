@@ -27,7 +27,7 @@ renderGetPodcast (fid, src) = do
     Right x -> case x of
       Just _  -> ">>> Synced " <> unpack fid <> "."
       Nothing -> "<#> Failed to decode " <> unpack fid <> "!"
-  pure $ (fid,) <$> either (const Nothing) id res
+  pure $ (fid,) <$> fromRight Nothing res
 
 renderEpisode :: (Int, Episode) -> Text
 renderEpisode (i, ep) = "\t" <> show i <> ": " <> title ep
