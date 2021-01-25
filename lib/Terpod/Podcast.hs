@@ -1,4 +1,4 @@
-module Podcast (PodcastId (PodcastId), _KeyPodcastId, getPodcast) where
+module Terpod.Podcast (PodcastId (PodcastId), _KeyPodcastId, getPodcast) where
 
 import Control.Exception (try)
 import Control.Lens ((^.))

@@ -1,8 +1,8 @@
-module Config (Config (..), unDownloadPath, DownloadPath (DownloadPath), Source (..), getCfg, expandTilde) where
+module Terpod.Config (Config (..), unDownloadPath, DownloadPath (DownloadPath), Source (..), getCfg, expandTilde) where
 
-import Podcast (PodcastId, _KeyPodcastId)
 import System.Environment.XDG.BaseDir (getUserConfigFile)
 import System.Directory (getHomeDirectory)
+import Terpod.Podcast (PodcastId, _KeyPodcastId)
 import Toml (TomlCodec, TomlDecodeError, (.=))
 import qualified Toml
 

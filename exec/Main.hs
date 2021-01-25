@@ -1,16 +1,16 @@
 module Main (main) where
 
 import CLI (Command (..), ListOptions (..), Options (..), Order (..), parseOptions)
-import Cache (CachedPodcast, findEpisode, getCache, setCache, toCached)
-import Config (Config, Source (sourceUrl), downloadPath, getCfg, sources)
 import Control.Newtype.Generics (unpack)
 import Control.Concurrent.Async (mapConcurrently)
 import Data.List.Extra (firstJust)
 import Data.Map ()
 import qualified Data.Map as M
 import qualified Data.Text as T
-import Episode (Episode (title), downloadEpisode)
-import Podcast (PodcastId, getPodcast)
+import Terpod.Cache (CachedPodcast, findEpisode, getCache, setCache, toCached)
+import Terpod.Config (Config, Source (sourceUrl), downloadPath, getCfg, sources)
+import Terpod.Episode (Episode (title), downloadEpisode)
+import Terpod.Podcast (PodcastId, getPodcast)
 import Text.Feed.Types (Feed)
 import Toml (TomlDecodeError)
 

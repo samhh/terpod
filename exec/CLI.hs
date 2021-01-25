@@ -1,7 +1,7 @@
 module CLI (parseOptions, Options (..), Command (..), ListOptions (..), Order (..)) where
 
 import qualified Options.Applicative as A
-import Podcast (PodcastId (PodcastId))
+import Terpod.Podcast (PodcastId (PodcastId))
 
 newtype Options = Options
   { command :: Command

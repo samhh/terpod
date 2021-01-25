@@ -31,3 +31,7 @@ talking-politics = { url = "https://rss.acast.com/talkingpolitics" }
 
 You'll first need to sync. Following a sync, any of the synced episode IDs can be downloaded on demand.
 
+## Contributing
+
+terpod is currently built against GHC 8.10.2.
+

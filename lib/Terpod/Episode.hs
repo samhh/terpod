@@ -1,8 +1,7 @@
-module Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), downloadEpisode) where
+module Terpod.Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), downloadEpisode) where
 
 import Byte (friendlySize)
 import Conduit (sinkFile, (.|), runConduitRes)
-import Config (DownloadPath, expandTilde, unDownloadPath)
 import Control.Newtype.Generics (Newtype, unpack)
 import Data.Char (isAlphaNum, toLower)
 import qualified Data.Text as T
@@ -10,7 +9,8 @@ import Data.Time.Calendar (Day)
 import Network (getContentLength)
 import Network.HTTP.Simple (httpSource, getResponseBody, parseRequest, Response)
 import System.Directory (createDirectoryIfMissing)
-import Podcast (PodcastId)
+import Terpod.Config (DownloadPath, expandTilde, unDownloadPath)
+import Terpod.Podcast (PodcastId)
 import System.FilePath.Posix (takeExtension, (</>))
 import Toml (TomlCodec)
 import qualified Toml

@@ -1,42 +1,14 @@
-cabal-version:      >=2.0
-version:            0.2.0
-license:            AGPL
-author:             Sam A. Horvath-Hunt
-maintainer:         terpod@samhh.com
-name:               terpod
-build-type:         Simple
-extra-source-files: CHANGELOG.md
+cabal-version:             2.2
+version:                   0.2.0
+license:                   AGPL-3.0-only
+author:                    Sam A. Horvath-Hunt
+maintainer:                terpod@samhh.com
+name:                      terpod
+build-type:                Simple
+extra-source-files:        CHANGELOG.md
 
-executable terpod
-  hs-source-dirs:     src/
-  main-is:            Main.hs
-  build-depends:
-      async                 ^>=2.2
-    , base                  ^>=4.14
-    , bytestring            ^>=0.10
-    , conduit               ^>=1.3
-    , containers            ^>=0.6
-    , directory             ^>=1.3
-    , extra                 ^>=1.7
-    , feed                  ^>=1.3
-    , filepath              ^>=1.4
-    , http-client           ^>=0.7
-    , http-conduit          ^>=2.3
-    , lens                  ^>=4.19
-    , newtype-generics      ^>=0.5
-    , optparse-applicative  ^>=0.16
-    , relude                ^>=0.7
-    , text                  ^>=1.2
-    , time                  ^>=1.9
-    , tomland
-    , tuple                 ^>=0.3
-    , wreq                  ^>=0.5
-    , xdg-basedir           ^>=0.2
-
-  mixins:
-    base hiding (Prelude),
-    relude (Relude as Prelude)
-
+common common
+  default-language:        Haskell2010
   default-extensions:
     DeriveGeneric
     GeneralizedNewtypeDeriving
@@ -45,18 +17,61 @@ executable terpod
     OverloadedStrings
     StrictData
     TupleSections
+  ghc-options:
+    -Wall
+  build-depends:
+      base                 ^>=4.14
+    , relude               ^>=0.7
+  mixins:
+      base hiding (Prelude)
+    , relude (Relude as Prelude)
 
-  ghc-options:        -Wall -fwrite-ide-info -hiedir=.hie
-  default-language:   Haskell2010
+executable terpod
+  import:                  common
+  hs-source-dirs:          exec/
+  main-is:                 Main.hs
+  build-depends:
+      terpod
+    , async                ^>=2.2
+    , containers           ^>=0.6
+    , extra                ^>=1.7
+    , feed                 ^>=1.3
+    , newtype-generics     ^>=0.5
+    , optparse-applicative ^>=0.16
+    , text                 ^>=1.2
+    , tomland
+  other-modules:
+    CLI
+
+library
+  import:                  common
+  hs-source-dirs:          lib/
+  build-depends:
+      bytestring           ^>=0.10
+    , conduit              ^>=1.3
+    , containers           ^>=0.6
+    , directory            ^>=1.3
+    , feed                 ^>=1.3
+    , filepath             ^>=1.4
+    , http-client          ^>=0.7
+    , http-conduit         ^>=2.3
+    , lens                 ^>=4.19
+    , newtype-generics     ^>=0.5
+    , text                 ^>=1.2
+    , time                 ^>=1.9
+    , tomland
+    , tuple                ^>=0.3
+    , wreq                 ^>=0.5
+    , xdg-basedir          ^>=0.2
+  exposed-modules:
+    Terpod.Cache
+    Terpod.Config
+    Terpod.Episode
+    Terpod.Podcast
   other-modules:
     Byte
-    Cache
-    CLI
-    Config
     Data.Functor.Custom
     Data.Tuple.Custom
-    Episode
     Network
-    Podcast
     Text.Feed.Query.Custom
     Toml.Codec.BiMap.Conversion.Custom
