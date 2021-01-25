@@ -1,9 +1,10 @@
 module Terpod.Config (Config (..), unDownloadPath, DownloadPath (DownloadPath), Source (..), getCfg, expandTilde) where
 
-import System.Environment.XDG.BaseDir (getUserConfigFile)
-import System.Directory (getHomeDirectory)
-import Terpod.Podcast (PodcastId, _KeyPodcastId)
-import Toml (TomlCodec, TomlDecodeError, (.=))
+import           System.Directory               (getHomeDirectory)
+import           System.Environment.XDG.BaseDir (getUserConfigFile)
+import           Terpod.Podcast                 (PodcastId, _KeyPodcastId)
+import           Toml                           (TomlCodec, TomlDecodeError,
+                                                 (.=))
 import qualified Toml
 
 newtype DownloadPath = DownloadPath FilePath
@@ -23,7 +24,7 @@ sourceCodec = Source <$> Toml.text "url" .= sourceUrl
 
 data Config = Config
   { downloadPath :: DownloadPath,
-    sources :: Map PodcastId Source
+    sources      :: Map PodcastId Source
   }
 
 cfgCodec :: TomlCodec Config
@@ -40,4 +41,4 @@ getCfg = Toml.decodeFileEither cfgCodec =<< cfgPath
 
 expandTilde :: FilePath -> IO FilePath
 expandTilde ('~' : xs) = (<> xs) <$> getHomeDirectory
-expandTilde xs = pure xs
+expandTilde xs         = pure xs

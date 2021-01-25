@@ -1,18 +1,22 @@
 module Main (main) where
 
-import CLI (Command (..), ListOptions (..), Options (..), Order (..), parseOptions)
-import Control.Newtype.Generics (unpack)
-import Control.Concurrent.Async (mapConcurrently)
-import Data.List.Extra (firstJust)
-import Data.Map ()
-import qualified Data.Map as M
-import qualified Data.Text as T
-import Terpod.Cache (CachedPodcast, findEpisode, getCache, setCache, toCached)
-import Terpod.Config (Config, Source (sourceUrl), downloadPath, getCfg, sources)
-import Terpod.Episode (Episode (title), downloadEpisode)
-import Terpod.Podcast (PodcastId, getPodcast)
-import Text.Feed.Types (Feed)
-import Toml (TomlDecodeError)
+import           CLI                      (Command (..), ListOptions (..),
+                                           Options (..), Order (..),
+                                           parseOptions)
+import           Control.Concurrent.Async (mapConcurrently)
+import           Control.Newtype.Generics (unpack)
+import           Data.List.Extra          (firstJust)
+import           Data.Map                 ()
+import qualified Data.Map                 as M
+import qualified Data.Text                as T
+import           Terpod.Cache             (CachedPodcast, findEpisode, getCache,
+                                           setCache, toCached)
+import           Terpod.Config            (Config, Source (sourceUrl),
+                                           downloadPath, getCfg, sources)
+import           Terpod.Episode           (Episode (title), downloadEpisode)
+import           Terpod.Podcast           (PodcastId, getPodcast)
+import           Text.Feed.Types          (Feed)
+import           Toml                     (TomlDecodeError)
 
 renderGetPodcast :: (PodcastId, Source) -> IO (Maybe (PodcastId, Feed))
 renderGetPodcast (fid, src) = do
@@ -21,7 +25,7 @@ renderGetPodcast (fid, src) = do
   putTextLn $ case res of
     Left _ -> "<#> Failed to fetch " <> unpack fid <> "!"
     Right x -> case x of
-      Just _ -> ">>> Synced " <> unpack fid <> "."
+      Just _  -> ">>> Synced " <> unpack fid <> "."
       Nothing -> "<#> Failed to decode " <> unpack fid <> "!"
   pure $ (fid,) <$> either (const Nothing) id res
 
@@ -68,7 +72,7 @@ list opts = case podcastId opts of
   Nothing -> mapM_ $ renderFeed opts
   Just pid ->
     find ((== pid) . fst) >>> \case
-      Nothing -> putTextLn $ "Failed to find synced podcast ID: " <> unpack pid
+      Nothing  -> putTextLn $ "Failed to find synced podcast ID: " <> unpack pid
       Just pod -> renderFeed opts pod
 
 sync :: Config -> IO ()

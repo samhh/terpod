@@ -1,19 +1,24 @@
 module Terpod.Cache (CachedPodcast, toCached, getCache, setCache, findEpisode) where
 
-import Data.Functor.Custom ((<$<))
-import qualified Data.Map as M
-import qualified Data.Text as T
-import qualified Data.Text.IO as TIO
-import Data.Time (LocalTime, getZonedTime, zonedTimeToLocalTime)
-import System.Directory (createDirectoryIfMissing)
-import System.FilePath.Posix ((</>))
-import System.Environment.XDG.BaseDir (getUserCacheDir)
-import Terpod.Episode (Episode (..), EpisodeId (EpisodeId), episodeIdCodec)
-import Terpod.Podcast (PodcastId, _KeyPodcastId)
-import Text.Feed.Query (feedItems, getItemPublishDate, getItemTitle)
-import Text.Feed.Query.Custom (getItemEnclosureLink, getItemId')
-import Text.Feed.Types (Feed)
-import Toml (TomlCodec, (.=))
+import           Data.Functor.Custom            ((<$<))
+import qualified Data.Map                       as M
+import qualified Data.Text                      as T
+import qualified Data.Text.IO                   as TIO
+import           Data.Time                      (LocalTime, getZonedTime,
+                                                 zonedTimeToLocalTime)
+import           System.Directory               (createDirectoryIfMissing)
+import           System.Environment.XDG.BaseDir (getUserCacheDir)
+import           System.FilePath.Posix          ((</>))
+import           Terpod.Episode                 (Episode (..),
+                                                 EpisodeId (EpisodeId),
+                                                 episodeIdCodec)
+import           Terpod.Podcast                 (PodcastId, _KeyPodcastId)
+import           Text.Feed.Query                (feedItems, getItemPublishDate,
+                                                 getItemTitle)
+import           Text.Feed.Query.Custom         (getItemEnclosureLink,
+                                                 getItemId')
+import           Text.Feed.Types                (Feed)
+import           Toml                           (TomlCodec, (.=))
 import qualified Toml
 
 type CachedPodcast = (PodcastId, [Episode])
@@ -28,7 +33,7 @@ episodeCodec =
 
 data Cache = Cache
   { timestamp :: LocalTime,
-    feeds :: Map PodcastId [Episode]
+    feeds     :: Map PodcastId [Episode]
   }
   deriving (Show)
 

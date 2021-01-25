@@ -1,18 +1,20 @@
 module Terpod.Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), downloadEpisode) where
 
-import Byte (friendlySize)
-import Conduit (sinkFile, (.|), runConduitRes)
-import Control.Newtype.Generics (Newtype, unpack)
-import Data.Char (isAlphaNum, toLower)
-import qualified Data.Text as T
-import Data.Time.Calendar (Day)
-import Network (getContentLength)
-import Network.HTTP.Simple (httpSource, getResponseBody, parseRequest, Response)
-import System.Directory (createDirectoryIfMissing)
-import Terpod.Config (DownloadPath, expandTilde, unDownloadPath)
-import Terpod.Podcast (PodcastId)
-import System.FilePath.Posix (takeExtension, (</>))
-import Toml (TomlCodec)
+import           Byte                     (friendlySize)
+import           Conduit                  (runConduitRes, sinkFile, (.|))
+import           Control.Newtype.Generics (Newtype, unpack)
+import           Data.Char                (isAlphaNum, toLower)
+import qualified Data.Text                as T
+import           Data.Time.Calendar       (Day)
+import           Network                  (getContentLength)
+import           Network.HTTP.Simple      (Response, getResponseBody,
+                                           httpSource, parseRequest)
+import           System.Directory         (createDirectoryIfMissing)
+import           System.FilePath.Posix    (takeExtension, (</>))
+import           Terpod.Config            (DownloadPath, expandTilde,
+                                           unDownloadPath)
+import           Terpod.Podcast           (PodcastId)
+import           Toml                     (TomlCodec)
 import qualified Toml
 
 newtype EpisodeId = EpisodeId Text
@@ -27,9 +29,9 @@ episodeIdCodec = Toml.diwrap . Toml.text
 -- helpful internally in the codebase as a unique ID (within the same podcast,
 -- anyway... hopefully!)
 data Episode = Episode
-  { episodeId :: EpisodeId,
-    title :: Text,
-    episodeUrl :: Text,
+  { episodeId   :: EpisodeId,
+    title       :: Text,
+    episodeUrl  :: Text,
     publishDate :: Day
   }
   deriving (Show)

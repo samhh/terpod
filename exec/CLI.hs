@@ -1,7 +1,7 @@
 module CLI (parseOptions, Options (..), Command (..), ListOptions (..), Order (..)) where
 
 import qualified Options.Applicative as A
-import Terpod.Podcast (PodcastId (PodcastId))
+import           Terpod.Podcast      (PodcastId (PodcastId))
 
 newtype Options = Options
   { command :: Command
@@ -15,9 +15,9 @@ data Order
 
 data ListOptions = ListOptions
   { podcastId :: Maybe PodcastId,
-    limit :: Maybe Int,
-    offset :: Maybe Int,
-    order :: Order
+    limit     :: Maybe Int,
+    offset    :: Maybe Int,
+    order     :: Order
   }
   deriving (Show)
 

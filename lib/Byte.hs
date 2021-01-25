@@ -1,7 +1,7 @@
 module Byte (Bytes (Bytes), Megabytes (Megabytes), megabytes, friendlySize) where
 
-import Control.Newtype.Generics (Newtype, unpack)
-import Numeric (showFFloat)
+import           Control.Newtype.Generics (Newtype, unpack)
+import           Numeric                  (showFFloat)
 
 newtype Bytes = Bytes Integer
   deriving (Generic)
