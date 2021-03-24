@@ -32,6 +32,7 @@ executable terpod
   main-is:                 Main.hs
   build-depends:
       terpod
+    , ansi-terminal        ^>=0.11
     , async                ^>=2.2
     , containers           ^>=0.6
     , extra                ^>=1.7
@@ -64,14 +65,14 @@ library
     , wreq                 ^>=0.5
     , xdg-basedir          ^>=0.2
   exposed-modules:
+    Data.Functor.Custom
+    Data.Tuple.Custom
     Terpod.Cache
     Terpod.Config
     Terpod.Episode
     Terpod.Podcast
   other-modules:
     Byte
-    Data.Functor.Custom
-    Data.Tuple.Custom
     Network
     Text.Feed.Query.Custom
     Toml.Codec.BiMap.Conversion.Custom
