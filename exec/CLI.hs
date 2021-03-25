@@ -1,6 +1,8 @@
 module CLI (parseOptions, Options (..), Command (..), ListOptions (..), Order (..)) where
 
+import           Data.Version        (showVersion)
 import qualified Options.Applicative as A
+import           Paths_terpod        (version)
 import           Terpod.Podcast      (PodcastId (PodcastId))
 
 newtype Options = Options
@@ -56,8 +58,10 @@ commandParser =
 parser :: A.ParserInfo Options
 parser =
   A.info
-    (A.helper <*> (Options <$> commandParser))
-    (A.fullDesc <> A.progDesc "Manage podcasts from the command-line.")
+    (A.helper <*> v <*> (Options <$> commandParser))
+    (A.fullDesc <> A.progDesc d)
+  where d = "Manage podcasts from the command-line."
+        v = A.infoOption (showVersion version) (A.short 'v' <> A.long "version" <> A.help "Output version")
 
 -- | Parse command-line options. The library we're using for this will handle
 -- the possibility of failure for us, which isn't encoded in the type

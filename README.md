@@ -5,11 +5,12 @@ A **ter**minal **pod**cast manager. Check out the issues for a sense of the proj
 **Nota bene:** This is very early on in development and instability should be expected. Be happy if it doesn't nuke your machine. (But please report a bug if it does!)
 
 ```
-Usage: terpod COMMAND
+Usage: terpod [-v|--version] COMMAND
   Manage podcasts from the command-line.
 
 Available options:
   -h,--help                Show this help text
+  -v,--version             Output version
 
 Available commands:
   sync                     Sync podcast feeds

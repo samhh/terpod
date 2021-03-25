@@ -42,6 +42,7 @@ executable terpod
     , text                 ^>=1.2
     , tomland
   other-modules:
+    Paths_terpod
     CLI
 
 library
