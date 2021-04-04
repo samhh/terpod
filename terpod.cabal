@@ -77,3 +77,18 @@ library
     Network
     Text.Feed.Query.Custom
     Toml.Codec.BiMap.Conversion.Custom
+
+test-suite test-terpod
+  import:                  common
+  hs-source-dirs:          test/
+  main-is:                 Spec.hs
+  type:                    exitcode-stdio-1.0
+  build-depends:
+      terpod
+    , hedgehog             ^>=1.0
+    , hspec                ^>=2.7
+    , hspec-hedgehog       ^>=0.0.1
+  build-tool-depends:
+    hspec-discover:hspec-discover
+  other-modules:
+    Terpod.EpisodeSpec

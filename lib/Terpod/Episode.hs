@@ -1,4 +1,4 @@
-module Terpod.Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), downloadEpisode) where
+module Terpod.Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), downloadEpisode, sanitise) where
 
 import           Byte                     (friendlySize)
 import           Conduit                  (runConduitRes, sinkFile, (.|))
