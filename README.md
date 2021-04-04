@@ -34,5 +34,5 @@ You'll first need to sync. Following a sync, any of the synced episode IDs can b
 
 ## Contributing
 
-terpod is currently built against GHC 8.10.2.
+terpod is currently built against GHC 8.10.4.
 
