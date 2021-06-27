@@ -22,6 +22,12 @@ common common
   build-depends:
       base                 ^>=4.14
     , relude               ^>=0.7
+    , containers           ^>=0.6
+    , extra                ^>=1.7
+    , lens                 ^>=4.19
+    , newtype-generics     ^>=0.5
+    , text                 ^>=1.2
+    , tuple                ^>=0.3
   mixins:
       base hiding (Prelude)
     , relude (Relude as Prelude)
@@ -34,12 +40,8 @@ executable terpod
       terpod
     , ansi-terminal        ^>=0.11
     , async                ^>=2.2
-    , containers           ^>=0.6
-    , extra                ^>=1.7
     , feed                 ^>=1.3
-    , newtype-generics     ^>=0.5
     , optparse-applicative ^>=0.16
-    , text                 ^>=1.2
     , tomland
   other-modules:
     Paths_terpod
@@ -51,18 +53,14 @@ library
   build-depends:
       bytestring           ^>=0.10
     , conduit              ^>=1.3
-    , containers           ^>=0.6
     , directory            ^>=1.3
     , feed                 ^>=1.3
     , filepath             ^>=1.4
     , http-client          ^>=0.7
     , http-conduit         ^>=2.3
-    , lens                 ^>=4.19
     , newtype-generics     ^>=0.5
-    , text                 ^>=1.2
     , time                 ^>=1.9
     , tomland
-    , tuple                ^>=0.3
     , wreq                 ^>=0.5
     , xdg-basedir          ^>=0.2
   exposed-modules:
