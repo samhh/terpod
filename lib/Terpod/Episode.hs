@@ -15,7 +15,7 @@ import           Network.HTTP.Conduit     (http, newManager, responseBody,
                                            tlsManagerSettings)
 import           Network.HTTP.Simple      (parseRequest)
 import           System.Directory         (createDirectoryIfMissing)
-import           System.FilePath.Posix    ((</>))
+import           System.FilePath.Posix    (takeExtension, (</>))
 import           Terpod.Config            (DownloadPath, expandTilde,
                                            unDownloadPath)
 import           Terpod.Podcast           (PodcastId)
