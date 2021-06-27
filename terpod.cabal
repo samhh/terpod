@@ -24,7 +24,7 @@ common common
     , relude               ^>=0.7
     , containers           ^>=0.6
     , extra                ^>=1.7
-    , lens                 ^>=4.19
+    , microlens            ^>=0.4
     , newtype-generics     ^>=0.5
     , text                 ^>=1.2
     , tuple                ^>=0.3
