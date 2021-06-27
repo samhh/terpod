@@ -1,16 +1,21 @@
 module Terpod.Episode (episodeIdCodec, EpisodeId (EpisodeId), Episode (..), downloadEpisode, sanitise) where
 
-import           Byte                     (friendlySize)
-import           Conduit                  (runConduitRes, sinkFile, (.|))
+import           Byte                     (Bytes (Bytes))
+import           Conduit                  (ConduitT, ResourceT, runResourceT,
+                                           sealConduitT, sinkFile, yield,
+                                           ($$+-), (.|))
 import           Control.Newtype.Generics (Newtype, unpack)
+import qualified Data.ByteString          as BS
 import           Data.Char                (isAlphaNum, toLower)
+import           Data.Conduit             (await)
 import qualified Data.Text                as T
 import           Data.Time.Calendar       (Day)
 import           Network                  (getContentLength)
-import           Network.HTTP.Simple      (Response, getResponseBody,
-                                           httpSource, parseRequest)
+import           Network.HTTP.Conduit     (http, newManager, responseBody,
+                                           tlsManagerSettings)
+import           Network.HTTP.Simple      (parseRequest)
 import           System.Directory         (createDirectoryIfMissing)
-import           System.FilePath.Posix    (takeExtension, (</>))
+import           System.FilePath.Posix    ((</>))
 import           Terpod.Config            (DownloadPath, expandTilde,
                                            unDownloadPath)
 import           Terpod.Podcast           (PodcastId)
@@ -49,16 +54,23 @@ sanitise = fmap toSafe
     toSafe x = if isAlphaNum x then toLower x else '-'
 
 -- | Download a podcast episode onto the filesystem.
-downloadEpisode :: DownloadPath -> PodcastId -> Episode -> IO FilePath
-downloadEpisode base pid ep = do
+downloadEpisode :: ((Bytes, Maybe Bytes) -> IO ()) -> DownloadPath -> PodcastId -> Episode -> IO FilePath
+downloadEpisode onProgress base pid ep = do
   let url = T.unpack $ episodeUrl ep
   req <- parseRequest url
   dir <- (</> T.unpack (unpack pid)) <$> expandTilde (unDownloadPath base)
   let path = dir </> (sanitise . T.unpack . title $ ep) <> takeExtension url
   createDirectoryIfMissing True dir
-  runConduitRes $ httpSource req logSizeAndGetBody .| sinkFile path
+  man <- newManager tlsManagerSettings
+  runResourceT $ do
+    res <- http req man
+    let total = getContentLength res
+    sealConduitT (responseBody res) $$+- callbackProgress total 0 .| sinkFile path
   pure path
-    where logSizeAndGetBody :: MonadIO m => Response (m b) -> m b
-          logSizeAndGetBody res = do
-            putStrLn . maybe "Unknown length" (("Size: " <>) . friendlySize) . getContentLength $ res
-            getResponseBody res
+    where callbackProgress :: Maybe Bytes -> Int -> ConduitT ByteString ByteString (ResourceT IO) ()
+          callbackProgress total curr = await >>= foldMap inspect
+            where inspect data' = do
+                    let curr' = curr + BS.length data'
+                    liftIO . onProgress . (, total) . Bytes . toInteger $ curr'
+                    yield data'
+                    callbackProgress total curr'

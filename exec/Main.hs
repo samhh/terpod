@@ -1,5 +1,6 @@
 module Main (main) where
 
+import           Byte                     (Bytes, friendlySize)
 import           CLI                      (Command (..), ListOptions (..),
                                            Options (..), Order (..),
                                            parseOptions)
@@ -54,9 +55,15 @@ download cfg pid i =
   getCache <&> firstJust (findEpisode pid i) >>= \case
     Nothing -> putTextLn $ "Failed to find synced episode at index: " <> show i
     Just ep -> do
-      putTextLn $ "Downloading episode: " <> title ep
-      path <- downloadEpisode (downloadPath cfg) pid ep
+      putTextLn $ "Downloading episode: " <> title ep <> "\n"
+      path <- downloadEpisode renderProgress (downloadPath cfg) pid ep
       putStrLn $ "Finished download, file at: " <> path
+
+  where renderProgress :: (Bytes, Maybe Bytes) -> IO ()
+        renderProgress (dl, mtotal) =
+          let total = maybe "?" friendlySize mtotal
+              output = "Downloaded: " <> T.pack (friendlySize dl) <> "/" <> T.pack total
+           in cursorUpLine 1 *> clearLine *> putTextLn output
 
 list :: Foldable f => ListOptions -> f CachedPodcast -> IO ()
 list opts = case podcastId opts of
