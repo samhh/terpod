@@ -47,8 +47,8 @@ instance Eq Episode where
 instance Ord Episode where
   compare = compare `on` publishDate
 
-sanitise :: String -> String
-sanitise = fmap toSafe
+sanitise :: Text -> Text
+sanitise = T.map toSafe
   where
     toSafe :: Char -> Char
     toSafe x = if isAlphaNum x then toLower x else '-'
@@ -59,7 +59,7 @@ downloadEpisode onProgress base pid ep = do
   let url = T.unpack $ episodeUrl ep
   req <- parseRequest url
   dir <- (</> T.unpack (unpack pid)) <$> expandTilde (unDownloadPath base)
-  let path = dir </> (sanitise . T.unpack . title $ ep) <> takeExtension url
+  let path = dir </> (T.unpack . sanitise . title $ ep) <> takeExtension url
   createDirectoryIfMissing True dir
   man <- newManager tlsManagerSettings
   runResourceT $ do

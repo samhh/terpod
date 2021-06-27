@@ -62,7 +62,7 @@ download cfg pid i =
   where renderProgress :: (Bytes, Maybe Bytes) -> IO ()
         renderProgress (dl, mtotal) =
           let total = maybe "?" friendlySize mtotal
-              output = "Downloaded: " <> T.pack (friendlySize dl) <> "/" <> T.pack total
+              output = "Downloaded: " <> friendlySize dl <> "/" <> total
            in cursorUpLine 1 *> clearLine *> putTextLn output
 
 list :: Foldable f => ListOptions -> f CachedPodcast -> IO ()
@@ -120,7 +120,7 @@ sync cfg = do
 
         syncOne :: (PodcastId -> IO ()) -> IO () -> (PodcastId, Source) -> IO (Maybe (PodcastId, Feed))
         syncOne onFailure onSuccess (fid, src) = do
-          res <- getPodcast . T.unpack . sourceUrl $ src
+          res <- getPodcast . sourceUrl $ src
           if isRight res then onSuccess else onFailure fid
           pure $ (fid,) <$> fromRight Nothing res
 

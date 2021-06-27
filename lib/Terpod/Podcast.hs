@@ -4,6 +4,7 @@ import           Control.Exception                  (try)
 import           Control.Lens                       ((^.))
 import           Control.Newtype.Generics           (Newtype, pack, unpack)
 import           Data.Functor.Custom                ((<$<))
+import qualified Data.Text                          as T
 import           Network.HTTP.Client                (HttpException)
 import qualified Network.Wreq                       as R
 import           Text.Feed.Import                   (parseFeedSource)
@@ -22,5 +23,5 @@ _KeyPodcastId = textBiMap pack unpack
 -- | Given a URL, attempt to retrieve a feed and parse it. `Left` represents
 -- a network-level failure and `Nothing` represents a failure to decode the
 -- response body as a feed.
-getPodcast :: String -> IO (Either HttpException (Maybe Feed))
-getPodcast = fmap (parseFeedSource . (^. R.responseBody)) <$< try . R.get
+getPodcast :: Text -> IO (Either HttpException (Maybe Feed))
+getPodcast = fmap (parseFeedSource . (^. R.responseBody)) <$< try . R.get . T.unpack
