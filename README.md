@@ -1,8 +1,6 @@
 # terpod
 
-A **ter**minal **pod**cast manager. Check out the issues for a sense of the project's short-term goals.
-
-**Nota bene:** This is very early on in development and instability should be expected. Be happy if it doesn't nuke your machine. (But please report a bug if it does!)
+A **ter**minal **pod**cast manager.
 
 ```
 Usage: terpod [-v|--version] COMMAND
