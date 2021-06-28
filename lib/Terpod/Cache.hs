@@ -2,7 +2,6 @@ module Terpod.Cache (CachedPodcast, toCached, getCache, setCache, findEpisode) w
 
 import           Data.Functor.Custom            ((<$<))
 import qualified Data.Map                       as M
-import qualified Data.Text                      as T
 import qualified Data.Text.IO                   as TIO
 import           Data.Time                      (LocalTime, getZonedTime,
                                                  zonedTimeToLocalTime)
@@ -64,12 +63,7 @@ setCache xs = do
   ts <- zonedTimeToLocalTime <$> getZonedTime
   let encoded = Toml.encode cacheCodec $ Cache ts $ M.fromList xs
   createDirectoryIfMissing True dir
-  TIO.writeFile (withCacheFile dir) (unicodePatch encoded)
-  where
-    -- Unicode characters seemingly incorrectly encoded by lib, see:
-    -- https://github.com/kowainik/tomland/issues/334
-    unicodePatch :: Text -> Text
-    unicodePatch = T.replace "\\u0&" "" . T.replace "\\u0\"" "\\\"" . T.replace "\\" "\\u0"
+  TIO.writeFile (withCacheFile dir) encoded
 
 findEpisode :: PodcastId -> Int -> CachedPodcast -> Maybe Episode
 findEpisode mpid i (pid, eps)
