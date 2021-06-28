@@ -42,7 +42,6 @@ executable terpod
     , async                ^>=2.2
     , feed                 ^>=1.3
     , optparse-applicative ^>=0.16
-    , tomland
   other-modules:
     Paths_terpod
     CLI
@@ -60,7 +59,7 @@ library
     , http-conduit         ^>=2.3
     , newtype-generics     ^>=0.5
     , time                 ^>=1.9
-    , tomland
+    , tomland              ^>=1.3
     , wreq                 ^>=0.5
     , xdg-basedir          ^>=0.2
   exposed-modules:

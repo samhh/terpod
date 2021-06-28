@@ -19,7 +19,6 @@ import           Terpod.Config            (Config, Source (sourceUrl),
 import           Terpod.Episode           (Episode (title), downloadEpisode)
 import           Terpod.Podcast           (PodcastId, getPodcast)
 import           Text.Feed.Types          (Feed)
-import           Toml                     (TomlDecodeError)
 
 renderEpisode :: (Int, Episode) -> Text
 renderEpisode (i, ep) = "\t" <> show i <> ": " <> title ep
@@ -47,7 +46,7 @@ renderFeed ListOptions {order, limit, offset} (fid, eps) = do
     applyLimit :: [a] -> [a]
     applyLimit = take (10 `fromMaybe` limit)
 
-renderFailedDecode :: Foldable f => f TomlDecodeError -> IO ()
+renderFailedDecode :: (Foldable f, Show a) => f a -> IO ()
 renderFailedDecode = mapM_ print
 
 download :: Config -> PodcastId -> Int -> IO ()
