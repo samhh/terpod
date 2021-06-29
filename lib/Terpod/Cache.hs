@@ -1,4 +1,4 @@
-module Terpod.Cache (CachedPodcast, toCached, getCache, setCache, findEpisode) where
+module Terpod.Cache (CachedPodcast, toCached, getCache, setCache, findEpisode, getPodcastIds) where
 
 import           Data.Functor.Custom            ((<$<))
 import qualified Data.Map                       as M
@@ -64,6 +64,9 @@ setCache xs = do
   let encoded = Toml.encode cacheCodec $ Cache ts $ M.fromList xs
   createDirectoryIfMissing True dir
   TIO.writeFile (withCacheFile dir) encoded
+
+getPodcastIds :: IO [PodcastId]
+getPodcastIds = fmap fst <$> getCache
 
 findEpisode :: PodcastId -> Int -> CachedPodcast -> Maybe Episode
 findEpisode mpid i (pid, eps)
