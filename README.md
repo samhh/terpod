@@ -3,7 +3,7 @@
 A **ter**minal **pod**cast manager.
 
 ```
-Usage: terpod [-v|--version] COMMAND
+Usage: terpod COMMAND
   Manage podcasts from the command-line.
 
 Available options:
