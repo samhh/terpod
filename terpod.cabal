@@ -26,6 +26,7 @@ common common
     , extra                ^>=1.7
     , microlens            ^>=0.4
     , newtype-generics     ^>=0.5
+    , nonempty-containers  ^>=0.3
     , text                 ^>=1.2
     , tuple                ^>=0.3
   mixins:
@@ -57,6 +58,7 @@ library
     , filepath             ^>=1.4
     , http-client          ^>=0.7
     , http-conduit         ^>=2.3
+    , mime-types           ^>=0.1
     , newtype-generics     ^>=0.5
     , time                 ^>=1.9
     , tomland              ^>=1.3
