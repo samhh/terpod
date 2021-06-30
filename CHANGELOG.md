@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 -- 2021-06-30
+
+Exactly ten months following the release of 0.2.0, 0.3.0 adds some polish to preexisting functionality:
+
+- The download command now displays download progress and the total download size
+- The sync command now features a more compact, dynamic output
+- Podcast IDs can now be tab-completed in supported shells
+- Reduced the risk of cache breakage in the presence of unicode characters - where unicode is encountered things may still render and otherwise behave slightly oddly
+- Improved file extension resolution
+
 ## 0.2.0 -- 2020-08-30
 
 This release smooths out a lot of rough edges from the initial release, and adds some list manipulation flags:
