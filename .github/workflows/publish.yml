@@ -1,16 +1,19 @@
-name: Any Push
+name: Publish
 
-on: [push]
+on:
+  create:
+    tags: ["[0-9].[0-9].[0-9]"]
 
 jobs:
-  code-quality:
-    name: Code Quality
+  publish:
+    name: Publish for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
-        os: [ubuntu-latest]
         ghc: ['8.10.4']
+        include:
+          - os: ubuntu-latest
+            asset_name: terpod-linux-amd64
 
     steps:
       - uses: actions/checkout@v2
@@ -18,16 +21,17 @@ jobs:
         id: setup-haskell
         with:
           ghc-version: ${{ matrix.ghc }}
-      # Borrowed from HLint's config
-      - run: cabal v2-freeze --enable-tests
       - uses: actions/cache@v2
         with:
           path: ${{ steps.setup-haskell.outputs.cabal-store }}
           key: ${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('cabal.project.freeze') }}
           restore-keys: ${{ runner.os }}-${{ matrix.ghc }}-
-      - name: Lint
-        run: curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s exec/ lib/
       - name: Build
-        run: cabal build
-      - name: Test
-        run: cabal test
+        run: cabal install --install-method=copy --installdir=dist
+      - name: Publish
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/terpod
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
